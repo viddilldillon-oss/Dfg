@@ -1,5 +1,5 @@
 // backend/controllers/exportController.js
-const Product = require("../models/product");
+const Product = require("../models/Product");
 const Order = require("../models/Order");
 const Sale = require("../models/Sale");
 

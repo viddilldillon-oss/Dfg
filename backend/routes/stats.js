@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const Sale = require("../models/Sale");
-const Product = require("../models/product");
+const Product = require("../models/Product");
 const User = require("../models/User");
 
 // Combined Stats Endpoint
