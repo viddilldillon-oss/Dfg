@@ -183,12 +183,8 @@ mongoose
       });
     }, 1000);
     
-    const PORT = process.env.PORT || 5000;
-    // 🎯 FIX: Use the http 'server' instance to listen, not the express 'app'
-    server.listen(PORT, () => { 
-      console.log(`✅ Server running on port ${PORT}`);
-      console.log("✅ Telegram summaries + Gmail forwarder active");
-    });
+   const PORT = process.env.PORT || 5000;
+   app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
   })
   .catch((err) => {
     console.error("❌ MongoDB connection failed:", err.message);
