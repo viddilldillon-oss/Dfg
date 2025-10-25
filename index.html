@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supa Dillie-Cious Mart</title>
+  <style>
+    :root{
+      --brand:#111;
+      --accent:#ffcc00;
+      --card:#fff;
+      --bg:#f4f4f4;
+      --muted:#666;
+      --ring:rgba(0,0,0,.06);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:#000}
+
+    /* Header (two side images + centered logo, fades on scroll) */
+    .header{position:relative;height:300px;overflow:hidden;transition:opacity .35s ease}
+    .header-images{display:flex;width:100%;height:100%}
+    .header-images img{width:50%;height:100%;object-fit:cover}
+    .logo-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .logo-overlay img{
+      height:100%;object-fit:contain;
+      -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%);
+      -webkit-mask-size: 120% 120%;
+      -webkit-mask-position:center;
+      mask-image: radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%);
+      mask-size: 120% 120%;
+      mask-position:center;
+    }
+    body.scrolled .header{opacity:.75}
+
+    /* Top bar */
+    .topbar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--ring);display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 16px}
+    .brand{font-weight:800}
+    .menu-btn{background:var(--accent);border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer}
+    .search{flex:1;max-width:560px;display:flex;gap:8px}
+    .search input{flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:8px}
+    .search .clear{border:1px solid #ddd;background:#fff;border-radius:8px;padding:10px 12px;cursor:pointer}
+
+    /* Dropdown menu (with animation) */
+    .dropdown{
+      position:absolute;
+      top:60px;
+      right:16px;
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:8px;
+      box-shadow:0 4px 8px rgba(0,0,0,.1);
+      flex-direction:column;
+      min-width:160px;
+      z-index:10;
+
+      opacity:0;
+      transform:translateY(-10px);
+      pointer-events:none;
+      transition:opacity 0.3s ease, transform 0.3s ease;
+    }
+    .dropdown.show{
+      opacity:1;
+      transform:translateY(0);
+      pointer-events:auto;
+    }
+    .dropdown a{padding:10px 14px;text-decoration:none;color:#000;display:block}
+    .dropdown a:hover{background:var(--accent);color:#000}
+
+    /* Grid */
+    .container{max-width:1100px;margin:18px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+    .card{background:var(--card);border:1px solid var(--ring);border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.06);padding:14px;display:flex;flex-direction:column;gap:10px}
+    .product-img{width:100%;height:160px;object-fit:cover;border-radius:10px;border:1px solid #eee;background:#fafafa}
+    .title{font-weight:700}
+    .price{font-weight:700}
+
+    /* Qty/Lb controls */
+    .unit-switch{display:flex;background:#f6f6f6;border-radius:10px;border:1px solid #e9e9e9;overflow:hidden}
+    .unit-switch button{flex:1;padding:8px;border:none;background:transparent;cursor:pointer;font-weight:600}
+    .unit-switch button.active{background:#111;color:#fff}
+
+    .qty-row{display:flex;gap:8px;align-items:center}
+    .stepper{display:flex;align-items:center;gap:6px;border:1px solid #ddd;border-radius:10px;padding:6px}
+    .stepper button{width:28px;height:28px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
+    .stepper input{width:70px;border:none;outline:none;text-align:center}
+
+    .btn{padding:10px 12px;border-radius:10px;border:1px solid #ddd;background:#fff;cursor:pointer}
+    .btn.primary{background:#111;color:#fff;border-color:#111}
+    .muted{color:var(--muted);font-size:.9rem}
+
+    /* Section heading */
+    .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:8px 0 14px}
+    .section-head h2{margin:0}
+    .results-count{color:#555;font-size:.9rem}
+  </style>
+
+  <link rel="stylesheet" href="css/hover-theme.css">
+</head>
+<body>
+  <!-- 🎯 FIX: Restored missing body content -->
+  <!-- Hero header -->
+  <div class="header">
+    <div class="header-images">
+      <img src="assets/stuff.png" alt="Groceries left">
+      <img src="assets/stuff2.png" alt="Groceries right">
+    </div>
+    <div class="logo-overlay">
+      <img src="assets/supa.png" alt="Supa Dillie-Cious Mart">
+    </div>
+  </div>
+
+  <!-- Sticky top bar with brand + search + burger -->
+  <div class="topbar">
+    <div class="brand">Supa Dillie-Cious Mart</div>
+    <div class="search">
+      <input id="searchBox" type="text" placeholder="Search products (e.g. mango, chicken, sardines)…"/>
+      <button id="clearSearch" class="clear">Clear</button>
+    </div>
+    <button class="menu-btn" id="menuToggle">Menu ☰</button>
+    <div class="dropdown" id="menuDropdown">
+      <a href="SF-cart.html">Cart</a>
+      <a href="SF-checkout.html">Checkout</a>
+      <a href="SF-about.html">About</a>
+    </div>
+  </div>
+
+  <!-- Products -->
+  <main class="container">
+    <div class="section-head">
+      <h2>Our Products</h2>
+      <div class="results-count" id="resultsCount">Loading…</div>
+    </div>
+    <div id="productGrid" class="grid">
+      <div class="card">Loading products…</div>
+    </div>
+  </main>
+
+  <!-- Existing storefront scripts -->
+  <script src="js/FT-utils.js"></script>
+  <script src="js/FT-products.js"></script>
+
+  <script>
+    // Fade header on scroll
+    window.addEventListener("scroll", () => {
+      document.body.classList.toggle("scrolled", window.scrollY > 50);
+    });
+
+    // Burger menu toggle with animation
+    const menuBtn = document.getElementById("menuToggle");
+    const dropdown = document.getElementById("menuDropdown");
+    menuBtn.addEventListener("click", () => {
+      dropdown.classList.toggle("show");
+    });
+  </script>
+
+<footer class="footer" style="margin-top:40px;padding:24px 16px;text-align:center;opacity:.95">
+  <div style="font-weight:600">Supa Dillie-cious Mart</div>
+  <div>
+    📍 <a href="https://www.google.com/maps?q=478+River+Avenue,+Winnipeg,+MB" target="_blank" style="text-decoration:underline">478 River Avenue, Winnipeg, MB</a>
+    &nbsp;&nbsp;•&nbsp;&nbsp; 📞 <a href="tel:+12048696113">204-869-6113</a>
+    &nbsp;&nbsp;•&nbsp;&nbsp; 🕒 10:30 AM–6 PM
+  </div>
+  <div style="margin-top:6px;opacity:.8">© 2025 Supa Dillie-cious Mart</div>
+</footer>
+
+</body>
+</html>
