@@ -89,7 +89,7 @@ app.get("/api/db-diagnostic", async (req, res) => {
   try {
     const Sale = require("./models/Sale");
     const Order = require("./models/Order");
-    const Product = require("./models/product");
+    const Product = require("./models/Product");
     
     const [salesCount, ordersCount, productsCount] = await Promise.all([
       Sale.countDocuments(),
