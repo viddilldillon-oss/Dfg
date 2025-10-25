@@ -8,7 +8,7 @@
   }
 
   // ✅ Define backend API root (always the Express server)
-  const API_ROOT = "http://localhost:5000/api";
+  const API_ROOT = "https://dfg-qq0j.onrender.com/api";
 
   // ✅ Fetch and display all products
   async function fetchProducts() {

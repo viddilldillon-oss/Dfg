@@ -1,7 +1,7 @@
 // FT-products.js
 // Frontend Storefront Product Loader + Cart Handler (Fixed + Synced)
 
-const API_URL = localStorage.getItem("API_URL") || "http://localhost:5000/api"; 
+const API_URL = localStorage.getItem("API_URL") || "https://dfg-qq0j.onrender.com/api"; 
 
 document.addEventListener("DOMContentLoaded", () => {
   const grid = document.getElementById("productGrid");
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!p.imageUrl) return "";
     return p.imageUrl.startsWith("http")
       ? p.imageUrl
-      : `http://localhost:5000${p.imageUrl}`;
+      : `https://dfg-qq0j.onrender.com${p.imageUrl}`;
   }
 
   // ========== RENDER PRODUCTS ==========

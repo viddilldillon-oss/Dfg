@@ -1,5 +1,5 @@
 (function () {
-  const API_ROOT = localStorage.getItem("API_URL") || "http://localhost:5000/api";
+  const API_ROOT = localStorage.getItem("API_URL") || "https://dfg-qq0j.onrender.com/api";
 
   // Authentication Check
   async function verifyAuth() {
@@ -115,7 +115,7 @@
   // Socket.IO real-time listener
   try {
     // 🎯 FIX: Explicitly connect to the backend server URL
-    const socket = io("http://localhost:5000");
+    const socket = io("https://dfg-qq0j.onrender.com");
     socket.on("connect", () => console.log("🔌 Socket.IO connected to server"));
     socket.on("disconnect", () => console.log("⚠️ Socket.IO disconnected"));
     socket.on("stats_update", (data) => {

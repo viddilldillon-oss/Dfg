@@ -1,5 +1,5 @@
 // FT-auth.script.js
-const API_ROOT = localStorage.getItem("API_URL") || "http://localhost:5000/api";
+const API_ROOT = localStorage.getItem("API_URL") || "https://dfg-qq0j.onrender.com/api";
 
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();

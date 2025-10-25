@@ -168,7 +168,7 @@
     });
 
     /* ===== Helpers ===== */
-    const API_ROOT = localStorage.getItem("API_URL") || "http://localhost:5000/api";
+    const API_ROOT = localStorage.getItem("API_URL") || "https://dfg-qq0j.onrender.com/api";
     const $ = sel => document.querySelector(sel);
     const formatMoney = n => "$" + Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});
     const formatQty = q => Number(q||0).toLocaleString();

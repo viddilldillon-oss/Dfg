@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadHardwareData() {
   const token = localStorage.getItem("token");
   try {
-    const res = await fetch("http://localhost:5000/api/hardware", {
+    const res = await fetch("https://dfg-qq0j.onrender.com/api/hardware", {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();

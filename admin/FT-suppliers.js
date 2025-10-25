@@ -1,6 +1,6 @@
 // FT-suppliers.js
 (function(){
-  const API = localStorage.getItem("API_URL") || "http://localhost:5000/api";
+  const API = localStorage.getItem("API_URL") || "https://dfg-qq0j.onrender.com/api";
   const token = localStorage.getItem("token");
   if (!token) {
     window.location.href = "FT-auth.page.html";
