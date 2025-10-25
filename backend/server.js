@@ -153,8 +153,16 @@ app.use((err, req, res, next) => {
 });
 
 // ✅ Connect MongoDB and Start Server
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error("FATAL ERROR: MONGO_URI is not defined in the environment variables.");
+  console.error("Please set the MONGO_URI environment variable in your .env file or in your deployment service's settings.");
+  process.exit(1);
+}
+
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected Successfully");
     
