@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS API Tester</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #00ff00;
+    }
+    button {
+      background: #00ff00;
+      color: #000;
+      border: none;
+      padding: 15px 30px;
+      cursor: pointer;
+      margin: 10px 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #00cc00;
+    }
+    pre {
+      background: #000;
+      padding: 15px;
+      border: 1px solid #00ff00;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .error { color: #ff0000; }
+    .success { color: #00ff00; }
+  </style>
+</head>
+<body>
+  <h1>🧪 POS API Test Tool</h1>
+  
+  <button onclick="testConnection()">1. Test Backend Connection</button><br>
+  <button onclick="testProductsFetch()">2. Test Products Endpoint</button><br>
+  <button onclick="testSaleRecord()">3. Test Record Sale</button><br>
+  
+  <h2>Results:</h2>
+  <pre id="output">Ready to test...</pre>
+
+  <script>
+    const API_BASE = 'http://localhost:5000';
+    const output = document.getElementById('output');
+
+    function log(msg, isError = false) {
+      const timestamp = new Date().toLocaleTimeString();
+      const className = isError ? 'error' : 'success';
+      output.innerHTML += `<span class="${className}">[${timestamp}] ${msg}</span>\n`;
+    }
+
+    async function testConnection() {
+      output.innerHTML = '';
+      log('🔍 Testing backend connection...');
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/stats`);
+        log(`Response status: ${response.status}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          log('✅ Backend is reachable!');
+          log(`Stats: ${JSON.stringify(data, null, 2)}`);
+        } else {
+          log(`❌ Backend returned error: ${response.status}`, true);
+        }
+      } catch (err) {
+        log(`❌ Connection failed: ${err.message}`, true);
+        log('Make sure backend is running on port 5000', true);
+      }
+    }
+
+    async function testProductsFetch() {
+      output.innerHTML = '';
+      log('🔍 Testing products endpoint...');
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/products`);
+        log(`Response status: ${response.status}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          log(`✅ Found ${data.length} products`);
+          if (data.length > 0) {
+            log(`First product: ${JSON.stringify(data[0], null, 2)}`);
+          }
+        } else {
+          log(`❌ Error: ${response.status}`, true);
+        }
+      } catch (err) {
+        log(`❌ Failed: ${err.message}`, true);
+      }
+    }
+
+    async function testSaleRecord() {
+      output.innerHTML = '';
+      log('🔍 Testing sale recording...');
+      
+      // First, get a real product
+      try {
+        const productsResponse = await fetch(`${API_BASE}/api/products`);
+        const products = await productsResponse.json();
+        
+        if (products.length === 0) {
+          log('❌ No products found in database', true);
+          return;
+        }
+        
+        const testProduct = products[0];
+        log(`Using product: ${testProduct.name} (${testProduct._id})`);
+        
+        // Create test sale
+        const testSale = {
+          items: [
+            {
+              productId: testProduct._id,
+              name: testProduct.name,
+              price: testProduct.price,
+              qty: 1
+            }
+          ],
+          total: testProduct.price * 1.07, // with 7% tax
+          paymentType: 'Test Sale'
+        };
+        
+        log('📦 Sending sale data...');
+        log(JSON.stringify(testSale, null, 2));
+        
+        const saleResponse = await fetch(`${API_BASE}/api/pos-sales/sale`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(testSale)
+        });
+        
+        log(`Response status: ${saleResponse.status}`);
+        
+        const result = await saleResponse.json();
+        
+        if (saleResponse.ok) {
+          log('✅ SALE RECORDED SUCCESSFULLY!');
+          log(`Response: ${JSON.stringify(result, null, 2)}`);
+          log('\n🎉 Now refresh your dashboard to see the updated total!');
+        } else {
+          log(`❌ Sale failed: ${result.message}`, true);
+        }
+        
+      } catch (err) {
+        log(`❌ Error: ${err.message}`, true);
+        log(`Stack: ${err.stack}`, true);
+      }
+    }
+  </script>
+</body>
+</html>

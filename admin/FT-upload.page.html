@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supa Dillie-cious – Upload</title>
+  <link rel="stylesheet" href="../css/FT-upload.style.css" />
+
+<style>
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  background: url("../assets/flag.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+}
+.btn { cursor:pointer; }
+.sidebar { width: 220px; background: rgba(0,0,0,0.85); padding:20px; height:100vh; position:fixed; left:0; top:0; }
+.sidebar h2 { color:#ffcc00; text-align:center; margin-bottom:20px; }
+.sidebar ul { list-style:none; padding:0; }
+.sidebar ul li { margin:12px 0; }
+.sidebar ul li a { display:block; padding:10px; background:rgba(0,0,0,0.5); color:#fff; text-decoration:none; border-radius:8px; }
+.sidebar ul li a.active, .sidebar ul li a:hover { background:#ffcc00; color:#000; }
+.main-content { margin-left:240px; padding:20px; }
+.card { background: rgba(0,0,0,0.6); padding: 16px; border-radius: 12px; }
+
+.upload-box{background:rgba(0,0,0,0.6);padding:20px;border-radius:12px;max-width:420px;} .upload-btn{background:#ffcc00;border:none;padding:10px 14px;border-radius:8px;color:#000;font-weight:bold;}
+</style>
+  <link rel="stylesheet" href="assets/hover-theme.css">
+</head>
+<body>
+<div class="sidebar">
+  <h2>Admin Menu</h2>
+  <ul>
+    <li><a href="FT-dashboard.page.html">Dashboard</a></li>
+    <li><a href="FT-products.page.html">Products</a></li>
+    <li><a href="FT-sales.page.html">Sales</a></li>
+    <li><a href="FT-orders.page.html">Orders</a></li>
+    <li><a href="FT-hardware.page.html">Hone-A-Way Hardware</a></li>
+    <li><a href="FT-upload.page.html">Upload</a></li>
+    <li><a href="FT-settings.page.html">Settings</a></li>
+    <li><a href="FT-logout.page.html">Logout</a></li>
+  </ul>
+</div>
+  <div class="main-content">
+    <h1>Upload Area</h1>
+    <p>Add a product with image.</p>
+
+    <div class="upload-box">
+      <h3>Add New Product</h3>
+      <form id="uploadProductForm">
+        <input type="text" id="uName" placeholder="Name" required />
+        <input type="number" id="uPrice" placeholder="Price" required step="0.01" />
+        <input type="text" id="uDesc" placeholder="Description" />
+        <input type="file" id="uImage" accept="image/*" required />
+        <p id="fileInfo">No file chosen</p>
+        <img id="previewImage" style="display:none; max-width:200px; margin-top:10px;" />
+        <button type="submit" class="upload-btn">Upload</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="FT-upload.script.js"></script>
+</body>
+</html>

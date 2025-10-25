@@ -1,0 +1,209 @@
+<!-- FT-layout.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supa Dillie-Cious Admin Dashboard</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      background: url("assets/supa.png") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 0;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 14px 20px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    header h1 {
+      position: absolute;
+      left: 20px;
+      font-size: 1.6rem;
+      color: #ffcc00;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+      margin: 0;
+    }
+
+    .menu-btn {
+      font-size: 1.8rem;
+      background: none;
+      border: 2px solid #ffcc00;
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: #ffcc00;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+      z-index: 2000;
+    }
+    .menu-btn:hover {
+      background: #ffcc00;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .menu {
+      position: fixed;
+      top: 65px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      border-radius: 10px;
+      width: 230px;
+      padding: 10px 0;
+      display: none;
+      flex-direction: column;
+      z-index: 1500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+    }
+    .menu.show {
+      display: flex;
+      animation: fadeIn 0.25s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .menu a {
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 18px;
+      transition: background 0.3s;
+    }
+    .menu a:hover {
+      background: #ffcc00;
+      color: #000;
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      padding: 120px 20px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .card {
+      background: rgba(0,0,0,0.55);
+      padding: 25px;
+      border-radius: 14px;
+      margin: 30px auto;
+      max-width: 600px;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    .btn {
+      background: #ffcc00;
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s, background 0.3s;
+    }
+    .btn:hover {
+      background: #e6b800;
+      transform: scale(1.05);
+    }
+
+    #pageContent { min-height: 500px; }
+  </style>
+  <link rel="stylesheet" href="assets/hover-theme.css">
+</head>
+
+<body>
+  <div class="overlay"></div>
+
+  <header>
+    <h1>Supa Dillie-Cious Admin Dashboard</h1>
+    <button class="menu-btn" id="menuBtn">☰</button>
+  </header>
+
+  <nav class="menu" id="menu">
+    <a href="#" data-page="./FT-dashboard.page.html">Dashboard</a>
+    <a href="#" data-page="./FT-products.page.html">Products</a>
+    <a href="#" data-page="./FT-orders.page.html">Orders</a>
+    <a href="#" data-page="./FT-sales.page.html">Sales</a>
+    <a href="#" data-page="./FT-suppliers.page.html">Suppliers</a>
+    <a href="#" data-page="./FT-settings.page.html">Settings</a>
+    <a href="#" data-page="./FT-logout.page.html">Logout</a>
+  </nav>
+
+  <main id="pageContent">
+    <div class="card">
+      <h2>Loading Dashboard...</h2>
+      <p>Please wait a moment.</p>
+    </div>
+  </main>
+
+  <script>
+    // ✅ Toggle menu
+    const menuBtn = document.getElementById("menuBtn");
+    const menu = document.getElementById("menu");
+    menuBtn.addEventListener("click", () => menu.classList.toggle("show"));
+    document.addEventListener("click", e => {
+      if (!menu.contains(e.target) && !menuBtn.contains(e.target)) menu.classList.remove("show");
+    });
+
+    // ✅ Dynamic page loader
+    async function loadPage(pageName) {
+      try {
+        const res = await fetch(pageName);
+        if (!res.ok) throw new Error("Page not found → " + pageName);
+        const html = await res.text();
+        document.getElementById("pageContent").innerHTML = html;
+      } catch (err) {
+        console.error("❌ Failed to load page:", err);
+        document.getElementById("pageContent").innerHTML =
+          `<div class='card'><h2>Error</h2><p style='color:#ff4444;'>${err.message}</p></div>`;
+      }
+    }
+
+    // ✅ Detect ?page= parameter (dashboard, products, etc.)
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const page = params.get("page") || "dashboard";
+      loadPage(`./FT-${page}.page.html`);
+    });
+
+    // ✅ Handle menu clicks
+    document.querySelectorAll(".menu a").forEach(a => {
+      a.addEventListener("click", e => {
+        e.preventDefault();
+        const page = a.getAttribute("data-page");
+        loadPage(page);
+        menu.classList.remove("show");
+      });
+    });
+  </script>
+</body>
+</html>

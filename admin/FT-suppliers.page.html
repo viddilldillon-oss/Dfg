@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suppliers - Supa Dillie-Cious Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--accent:#ffcc00;--glass:rgba(0,0,0,.55);--glass2:rgba(0,0,0,.35);--glow:0 10px 30px rgba(0,0,0,.35)}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#fff;background:url("assets/supa.png") no-repeat center center fixed;background-size:cover;position:relative;overflow-x:hidden}
+    .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.45));z-index:0}
+    header{position:fixed;top:0;left:0;width:100%;z-index:10;display:flex;align-items:center;justify-content:center;padding:14px 22px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);box-shadow:var(--glow)}
+    header h1{position:absolute;left:110px;top:50%;transform:translateY(-50%);margin:0;font-size:1.25rem;letter-spacing:.4px;color:var(--accent);text-shadow:0 2px 10px rgba(0,0,0,.6)}
+    .home-btn{position:absolute;left:15px;top:50%;transform:translateY(-50%);background:var(--accent);color:#000;border:none;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;transition:background .2s,transform .2s}
+    .home-btn:hover{background:#ffd633;transform:scale(1.05)}
+    .menu-btn{font-size:26px;line-height:1;background:transparent;border:2px solid var(--accent);color:var(--accent);cursor:pointer;padding:6px 10px;border-radius:10px;transition:transform .2s,background .2s,color .2s}
+    .menu-btn:hover{transform:scale(1.05);background:var(--accent);color:#000}
+    .menu{position:fixed;top:66px;left:50%;transform:translateX(-50%);z-index:12;width:230px;padding:10px 0;border-radius:12px;background:var(--glass);backdrop-filter:blur(8px);box-shadow:var(--glow);display:none;flex-direction:column;overflow:auto;max-height:70vh;border:1px solid rgba(255,255,255,.08)}
+    .menu.show{display:flex}
+    .menu a{color:#fff;text-decoration:none;padding:12px 16px;display:block;transition:background .2s}
+    .menu a:hover{background:rgba(255,204,0,.3)}
+    .menu hr{border:0;border-top:1px solid rgba(255,255,255,.08);margin:6px 0}
+    main{position:relative;z-index:1;max-width:1100px;margin:120px auto 40px;padding:0 16px}
+    .card{background:var(--glass);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;box-shadow:var(--glow);margin-bottom:20px}
+    h2{color:var(--accent);text-shadow:0 2px 8px rgba(0,0,0,.5);margin-top:0}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+    .toolbar input[type="text"]{padding:10px;border:none;border-radius:10px;background:rgba(255,255,255,.15);color:#fff;outline:none}
+    .btn{padding:10px 14px;border:none;border-radius:10px;font-weight:700;cursor:pointer;background:var(--accent);color:#000;box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .15s,background .2s}
+    .btn:hover{transform:scale(1.05);background:#ffd633}
+    .btn.secondary{background:rgba(255,255,255,.15);color:#fff}
+    .btn.secondary:hover{background:rgba(255,255,255,.3)}
+    .folders{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+    .folder{background:var(--glass2);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;cursor:pointer;transition:transform .15s,background .2s;min-height:90px;position:relative}
+    .folder:hover{transform:translateY(-2px);background:rgba(0,0,0,.45)}
+    .folder .name{font-weight:800;color:var(--accent)}
+    .folder .meta{opacity:.85;font-size:.9rem;margin-top:6px}
+    .folder .delete{position:absolute;top:10px;right:10px;background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-weight:bold;cursor:pointer;transition:transform .15s,background .2s}
+    .folder .delete:hover{background:#ff6666;transform:scale(1.1)}
+    .sheet-head{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:10px}
+    .zoom-group .btn{padding:6px 10px}
+    table{width:100%;border-collapse:collapse;background:rgba(0,0,0,.35);border-radius:12px;overflow:hidden;table-layout:auto}
+    th,td{padding:10px;border:1px solid rgba(255,255,255,.1);text-align:left;vertical-align:top}
+    th{background:var(--accent);color:#000}
+    td{color:#fff}
+    td input, td textarea{width:100%;padding:8px;border:none;border-radius:8px;background:rgba(255,255,255,.12);color:#fff;outline:none;resize:none;min-height:32px;transition:background .15s;box-sizing:border-box;overflow:hidden;font-family:inherit;font-size:inherit;line-height:1.4}
+    td input:focus, td textarea:focus{background:rgba(255,255,255,.25)}
+    .actions .btn{padding:6px 10px;border-radius:8px;font-weight:700}
+    .zoomable{transform-origin:top left}
+    @media print{
+      /* Hide everything except the sheet */
+      header,.menu,.toolbar,.folders,.sheet-head,.chart-wrap,.overlay{display:none!important}
+      .zoom-group{display:none!important}
+
+      /* Reset body for clean print */
+      body{background:white!important;color:#000!important;margin:0;padding:20px}
+      main{margin:0;padding:0;max-width:100%}
+
+      /* Clean card background for print */
+      .card{background:white!important;border:none!important;box-shadow:none!important;padding:10px!important}
+
+      /* Reset zoom scale for print */
+      .zoomable{transform:none!important;scale:1!important}
+
+      /* Excel-style table borders */
+      table{
+        width:100%!important;
+        border-collapse:collapse!important;
+        background:white!important;
+        border:2px solid #000!important;
+        page-break-inside:auto;
+      }
+
+      /* Table headers - clear black borders */
+      th{
+        background:#ffcc00!important;
+        color:#000!important;
+        border:1px solid #000!important;
+        padding:8px!important;
+        font-weight:bold!important;
+        text-align:left!important;
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      }
+
+      /* Table cells - clear borders and wrapping */
+      td{
+        border:1px solid #000!important;
+        padding:8px!important;
+        color:#000!important;
+        background:white!important;
+        vertical-align:top!important;
+        word-wrap:break-word!important;
+        page-break-inside:avoid;
+      }
+
+      /* Hide Actions column completely */
+      th:last-child,td:last-child{display:none!important}
+
+      /* Input and textarea - clean print appearance */
+      td input,td textarea{
+        background:transparent!important;
+        border:none!important;
+        color:#000!important;
+        padding:0!important;
+        margin:0!important;
+        width:100%!important;
+        font-size:inherit!important;
+        word-wrap:break-word!important;
+        white-space:pre-wrap!important;
+        overflow-wrap:break-word!important;
+      }
+
+      /* Ensure rows don't break across pages */
+      tr{page-break-inside:avoid}
+
+      /* Title visible in print */
+      #sheetTitle{display:block!important;color:#000!important;text-shadow:none!important;margin-bottom:15px!important}
+    }
+  </style>
+  <link rel="stylesheet" href="assets/hover-theme.css">
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <header>
+    <button class="home-btn" onclick="window.location.href='FT-dashboard.page.html'">🏠 Home</button>
+    <h1>Suppliers</h1>
+    <button class="menu-btn" id="menuBtn">☰</button>
+  </header>
+
+  <nav class="menu" id="menu">
+    <a href="FT-dashboard.page.html">Dashboard</a>
+    <a href="FT-products.page.html">Products</a>
+    <a href="FT-orders.page.html">Orders</a>
+    <a href="FT-sales.page.html">Sales</a>
+    <a href="FT-suppliers.page.html" class="active">Suppliers</a>
+    <hr>
+    <a href="FT-settings.page.html">Settings</a>
+    <a href="FT-logout.page.html">Logout</a>
+  </nav>
+
+  <main>
+    <section class="card" id="foldersCard">
+      <div class="toolbar">
+        <button class="btn" id="newFolderBtn">+ New Folder</button>
+        <button class="btn secondary" id="refreshBtn">Refresh</button>
+        <input type="text" id="folderSearch" class="search" placeholder="Search folders by name..."/>
+      </div>
+      <div id="foldersWrap" class="folders"></div>
+    </section>
+
+    <section class="card" id="sheetCard" style="display:none">
+      <div class="sheet-head">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <h2 id="sheetTitle">Supplier Sheet</h2>
+        </div>
+        <div class="zoom-group">
+          <button class="btn secondary" id="zoomOutBtn">Zoom −</button>
+          <button class="btn secondary" id="zoomInBtn">Zoom +</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn secondary" id="backBtn">← Back to Folders</button>
+        <button class="btn secondary" id="saveBtn">Save Sheet</button>
+        <button class="btn secondary" id="printBtn">Print</button>
+        <input type="text" id="searchInput" class="search" placeholder="Search current sheet..."/>
+      </div>
+      <div id="sheetWrap" class="zoomable" style="scale:1">
+        <table id="sheet">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>Item</th>
+              <th>Category</th>
+              <th>Unit Cost ($)</th>
+              <th>Qty</th>
+              <th>Total ($)</th>
+              <th>Notes</th>
+              <th style="width:160px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sheetBody"></tbody>
+        </table>
+      </div>
+      <div class="card chart-wrap" style="margin-top:20px">
+        <h2>Price Comparison (All Suppliers)</h2>
+        <canvas id="cmpChart" height="140"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (function(){
+    // ===== Burger menu toggle =====
+    const menuBtn = document.getElementById("menuBtn");
+    const menu = document.getElementById("menu");
+    if(menuBtn && menu){
+      menuBtn.addEventListener("click", () => menu.classList.toggle("show"));
+      document.addEventListener("click", (e) => {
+        if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+          menu.classList.remove("show");
+        }
+      });
+    }
+
+    const API_ROOT = localStorage.getItem("API_URL") || "http://localhost:5000/api";
+    const $ = id => document.getElementById(id);
+    const foldersWrap=$("foldersWrap"),newFolderBtn=$("newFolderBtn"),refreshBtn=$("refreshBtn"),folderSearch=$("folderSearch");
+    const sheetCard=$("sheetCard"),foldersCard=$("foldersCard"),saveBtn=$("saveBtn"),printBtn=$("printBtn"),backBtn=$("backBtn");
+    const sheetBody=$("sheetBody"),searchInput=$("searchInput"),wrap=$("sheetWrap"),zoomInBtn=$("zoomInBtn"),zoomOutBtn=$("zoomOutBtn");
+    const chartCtx=document.getElementById("cmpChart").getContext("2d");
+    let folders=[],currentName="",rows=[],zoom=1,chart=null;
+
+    const money=v=>Number.isFinite(+v)?(+v).toFixed(2):"0.00";
+    const calcRowTotal=r=>parseFloat(r.unitCost||0)*parseFloat(r.quantity||0);
+
+    async function loadFolders(){
+      try{
+        const r=await fetch(API_ROOT+"/supplier-sheets");
+        folders=await r.json();
+        renderFolders();
+        await renderChartGlobal();
+      }catch(err){
+        console.error("Failed to load folders:", err);
+        folders=[];
+        renderFolders();
+      }
+    }
+
+    function renderFolders(){
+      const q=(folderSearch.value||"").toLowerCase();
+      foldersWrap.innerHTML="";
+      const list=folders.filter(f=>!q||(String(f.name||"").toLowerCase().includes(q)));
+      if(!list.length){
+        foldersWrap.innerHTML="<div class='folder' style='opacity:.85'><div class='name'>No folders found</div><div class='meta'>Click “+ New Folder”</div></div>";
+        return;
+      }
+      list.forEach(f=>{
+        const div=document.createElement("div");
+        div.className="folder";div.dataset.name=f.name||"";
+        div.innerHTML=`<button class='delete' title='Delete'>×</button>
+                       <div class='name'>📁 ${f.name||"(unnamed)"}</div>
+                       <div class='meta'>Updated: ${f.updatedAt?new Date(f.updatedAt).toLocaleString():"—"}</div>`;
+        foldersWrap.appendChild(div);
+      });
+    }
+
+    async function createFolder(){
+      const name=prompt("Enter new supplier folder name:");
+      if(!name || !name.trim())return;
+      try{
+        await fetch(`${API_ROOT}/supplier-sheets/${encodeURIComponent(name.trim())}`,{
+          method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:[]})
+        });
+        await loadFolders();
+        openFolder(name.trim());
+      }catch(err){
+        console.error("Failed to create folder:", err);
+        alert("❌ Failed to create folder.");
+      }
+    }
+
+    async function deleteFolder(name){
+      if(!name && name !== "")return;
+      const displayName = name || "(unnamed)";
+      const ok=confirm(`Delete folder "${displayName}"?`);
+      if(!ok)return;
+      try{
+        // If name is empty or "(unnamed)", send empty string to match backend logic
+        const encodedName = name ? encodeURIComponent(name) : "";
+        await fetch(`${API_ROOT}/supplier-sheets/${encodedName}`,{method:"DELETE"});
+        await loadFolders();
+      }catch(err){
+        console.error("Failed to delete folder:", err);
+        alert("❌ Failed to delete folder.");
+      }
+    }
+
+    async function openFolder(name){
+      currentName=name;
+      document.getElementById("sheetTitle").textContent="Supplier Sheet — "+(name||"(unnamed)");
+      foldersCard.style.display="none";
+      sheetCard.style.display="";
+      await loadSheet(name);
+      await renderChartGlobal();
+    }
+
+    async function loadSheet(name){
+      try{
+        const res=await fetch(`${API_ROOT}/supplier-sheets/${encodeURIComponent(name)}`);
+        const d=await res.json();
+        rows=(Array.isArray(d.rows)&&d.rows.length?d.rows:[{supplier:name||"(unnamed)"}]);
+      }catch(err){
+        console.error("Failed to load sheet:", err);
+        rows=[{supplier:name||"(unnamed)"}];
+      }
+      renderSheet();
+    }
+
+    // Auto-resize textarea/input to fit content (Excel-like behavior)
+    function autoResize(el){
+      if(!el)return;
+      // Reset height to auto to get proper scrollHeight
+      el.style.height='auto';
+      // Set height to scrollHeight to fit content
+      el.style.height=el.scrollHeight+'px';
+    }
+
+    function renderSheet(){
+      const searchTerm = (searchInput.value||"").toLowerCase();
+      sheetBody.innerHTML="";
+      rows.forEach((r,i)=>{
+        // Filter by search term
+        if(searchTerm){
+          const searchable = [r.supplier,r.item,r.category,r.notes].join(" ").toLowerCase();
+          if(!searchable.includes(searchTerm))return;
+        }
+        const total=calcRowTotal(r);
+        sheetBody.innerHTML+=`
+          <tr>
+            <td><textarea data-i="${i}" data-k="supplier">${r.supplier||""}</textarea></td>
+            <td><textarea data-i="${i}" data-k="item">${r.item||""}</textarea></td>
+            <td><textarea data-i="${i}" data-k="category">${r.category||""}</textarea></td>
+            <td><input type="number" step="0.01" value="${r.unitCost||0}" data-i="${i}" data-k="unitCost"></td>
+            <td><input type="number" step="0.01" value="${r.quantity||0}" data-i="${i}" data-k="quantity"></td>
+            <td><input value="${money(total)}" disabled></td>
+            <td><textarea data-i="${i}" data-k="notes">${r.notes||""}</textarea></td>
+            <td class='actions'>
+              <button class='btn secondary' data-act='add' data-i='${i}'>+ Row</button>
+              <button class='btn secondary' data-act='dup' data-i='${i}'>Duplicate</button>
+              <button class='btn secondary' data-act='del' data-i='${i}'>Delete</button>
+            </td>
+          </tr>`;
+      });
+      // Auto-resize all textareas after render
+      sheetBody.querySelectorAll('textarea').forEach(autoResize);
+    }
+
+    sheetBody.addEventListener("input",e=>{
+      const el=e.target;
+      const i=el.dataset.i,k=el.dataset.k;
+      if(i!==undefined&&k){
+        rows[i][k]=el.value;
+        autoResize(el);
+        if(k==='unitCost'||k==='quantity'){
+          const total=calcRowTotal(rows[i]);
+          const totalInput=el.closest('tr').querySelector('input[disabled]');
+          if(totalInput)totalInput.value=money(total);
+        }
+      }
+    });
+
+    // Auto-resize on focus (handles pre-filled content)
+    sheetBody.addEventListener("focus",e=>{
+      if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'){
+        autoResize(e.target);
+      }
+    },true);
+
+    sheetBody.addEventListener("click",e=>{
+      const btn=e.target;
+      if(!btn.dataset.act)return;
+      const act=btn.dataset.act,i=+btn.dataset.i;
+      if(act==="add"){
+        rows.splice(i+1,0,{supplier:currentName||"(unnamed)"});
+      }else if(act==="dup"){
+        rows.splice(i+1,0,{...rows[i]});
+      }else if(act==="del"){
+        if(rows.length>1){
+          rows.splice(i,1);
+        }else{
+          alert("Cannot delete the last row. Edit it instead.");
+          return;
+        }
+      }
+      renderSheet();
+    });
+
+    async function saveSheet(){
+      const clean=rows.map(r=>({...r,total:calcRowTotal(r)}));
+      try{
+        await fetch(`${API_ROOT}/supplier-sheets/${encodeURIComponent(currentName)}`,{
+          method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:clean})
+        });
+        alert("✅ Sheet saved successfully!");
+        await loadFolders();
+        await renderChartGlobal();
+      }catch(err){
+        console.error("Failed to save sheet:", err);
+        alert("❌ Failed to save sheet.");
+      }
+    }
+
+    async function renderChartGlobal(){
+      let list=[];
+      try{
+        const r=await fetch(API_ROOT+"/supplier-sheets");
+        list=await r.json();
+      }catch(err){
+        console.error("Failed to fetch sheets for chart:", err);
+      }
+      const map={};
+      await Promise.all(list.map(async n=>{
+        try{
+          const r=await fetch(`${API_ROOT}/supplier-sheets/${encodeURIComponent(n.name)}`);
+          const d=await r.json();
+          if(d.rows && d.rows.length){
+            const avg=d.rows.reduce((s,x)=>s+(parseFloat(x.unitCost)||0),0)/(d.rows.length||1);
+            map[n.name||"(unnamed)"]=avg;
+          }
+        }catch(err){
+          console.error("Failed to load sheet for chart:", n.name, err);
+        }
+      }));
+      const labels=Object.keys(map),data=labels.map(k=>map[k]);
+      if(chart)chart.destroy();
+      chart=new Chart(chartCtx,{
+        type:"bar",
+        data:{labels,datasets:[{label:"Avg Unit Cost ($)",data,backgroundColor:"#ffcc00"}]},
+        options:{plugins:{legend:{labels:{color:"#fff"}}},
+                 scales:{x:{ticks:{color:"#fff"}},y:{ticks:{color:"#fff"}}}}
+      });
+    }
+
+    foldersWrap.addEventListener("click",e=>{
+      const btn=e.target;
+      if(btn.classList.contains("delete")){
+        e.stopPropagation();
+        const folder=btn.closest(".folder");
+        if(folder)deleteFolder(folder.dataset.name);
+      }else{
+        const folder=btn.closest(".folder");
+        if(folder){
+          const name=folder.dataset.name;
+          openFolder(name);
+        }
+      }
+    });
+
+    newFolderBtn.onclick=createFolder;
+    refreshBtn.onclick=()=>loadFolders();
+    backBtn.onclick=()=>{
+      sheetCard.style.display="none";
+      foldersCard.style.display="";
+    };
+    saveBtn.onclick=saveSheet;
+    printBtn.onclick=()=>window.print();
+    zoomInBtn.onclick=()=>{zoom=Math.min(2,zoom+0.1);wrap.style.scale=zoom.toFixed(2);};
+    zoomOutBtn.onclick=()=>{zoom=Math.max(0.6,zoom-0.1);wrap.style.scale=zoom.toFixed(2);};
+    searchInput.oninput=renderSheet;
+    folderSearch.oninput=renderFolders;
+
+    document.addEventListener("DOMContentLoaded",()=>loadFolders());
+  })();
+  </script>
+</body>
+</html>

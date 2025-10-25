@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cart — Supa Dillie-Cious Mart</title>
+  <style>
+    body {
+      font-family: system-ui, Segoe UI, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #fafafa;
+      color: #111;
+    }
+    h1 {margin-top: 0;}
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      text-decoration: none;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn.primary {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      background: #fff;
+    }
+    .table th, .table td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    .totals {
+      margin: 16px 0;
+      background: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+    .totals .total {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    #cartEmpty {
+      padding: 14px;
+      border: 1px dashed #aaa;
+      border-radius: 8px;
+      margin: 10px 0;
+      background: #fafafa;
+    }
+  </style>
+  <link rel="stylesheet" href="css/hover-theme.css">
+</head>
+<body>
+  <h1>Cart (<span id="cartCount">0</span>)</h1>
+
+  <div id="cartEmpty" style="display:none">Your cart is empty.</div>
+
+  <table id="cartTable" class="table">
+    <thead>
+      <tr>
+        <th>Name</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="totals">
+    <div>Subtotal: <span id="subtotal">$0.00</span></div>
+    <div>Tax: <span id="tax">$0.00</span></div>
+    <div class="total">Total: <span id="total">$0.00</span></div>
+  </div>
+
+  <div class="actions" style="display:flex;gap:10px">
+    <a class="btn" href="index.html">← Continue shopping</a>
+     <a class="btn primary" href="SF-checkout.html">Checkout</a>
+  </div>
+
+  <script>
+  // =============================
+  // Cart Utilities
+  // =============================
+  const CART_KEY = "supa_cart";
+
+  function readCart() {
+    try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); }
+    catch { return []; }
+  }
+  function writeCart(items) {
+    localStorage.setItem(CART_KEY, JSON.stringify(items));
+    updateCartBadge();
+  }
+  function removeFromCart(id) {
+    writeCart(readCart().filter(i => i._id !== id));
+  }
+  function setQty(id, qty) {
+    const cart = readCart();
+    const it = cart.find(i => i._id === id);
+    if (it) { it.qty = Math.max(1, qty); writeCart(cart); }
+  }
+  function cartTotals() {
+    const cart = readCart();
+    let subtotal = 0;
+    cart.forEach(i => {
+      subtotal += (Number(i.price) || 0) * (Number(i.qty) || 0);
+    });
+    const tax = 0;
+    const total = subtotal + tax;
+    return { subtotal, tax, total };
+  }
+  function money(n) { return `$${(Number(n) || 0).toFixed(2)}`; }
+  function updateCartBadge() {
+    const badgeEls = document.querySelectorAll("#cartCount, .cart-count");
+    const count = readCart().reduce((s, i) => s + (Number(i.qty) || 0), 0);
+    badgeEls.forEach(el => el.textContent = count);
+  }
+
+  // =============================
+  // Render Cart
+  // =============================
+  document.addEventListener("DOMContentLoaded", () => {
+    renderCart();
+  });
+
+  function renderCart() {
+    updateCartBadge();
+
+    const body = document.querySelector("#cartTable tbody");
+    const empty = document.getElementById("cartEmpty");
+    const subtotalEl = document.getElementById("subtotal");
+    const taxEl = document.getElementById("tax");
+    const totalEl = document.getElementById("total");
+
+    const cart = readCart();
+    if (!body || !subtotalEl || !taxEl || !totalEl) return;
+
+    body.innerHTML = "";
+
+    if (!cart.length) {
+      empty.style.display = "block";
+      document.getElementById("cartTable").style.display = "none";
+      subtotalEl.textContent = "$0.00";
+      taxEl.textContent = "$0.00";
+      totalEl.textContent = "$0.00";
+      return;
+    }
+
+    empty.style.display = "none";
+    document.getElementById("cartTable").style.display = "table";
+
+    // render rows
+    cart.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.name}</td>
+        <td>${money(item.price)}</td>
+        <td>
+          <input type="number" min="1" value="${item.qty}"
+            data-id="${item._id}"
+            class="qty"
+            style="width:60px;text-align:center;border:1px solid #ccc;border-radius:6px;">
+        </td>
+        <td>${money(item.price * item.qty)}</td>
+        <td><button class="btn" data-remove="${item._id}">Remove</button></td>
+      `;
+      body.appendChild(tr);
+    });
+
+    const { subtotal, tax, total } = cartTotals();
+    subtotalEl.textContent = money(subtotal);
+    taxEl.textContent = money(tax);
+    totalEl.textContent = money(total);
+
+    // Quantity change
+    body.querySelectorAll("input.qty").forEach(input => {
+      input.addEventListener("change", e => {
+        const id = e.target.getAttribute("data-id");
+        const newQty = parseInt(e.target.value, 10);
+        setQty(id, newQty);
+        renderCart();
+      });
+    });
+
+    // Remove
+    body.querySelectorAll("button[data-remove]").forEach(btn => {
+      btn.addEventListener("click", e => {
+        const id = e.target.getAttribute("data-remove");
+        removeFromCart(id);
+        renderCart();
+      });
+    });
+  }
+  </script>
+</body>
+</html>

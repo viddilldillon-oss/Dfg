@@ -1,0 +1,98 @@
+<!-- FT-hardware.page.html (Local Layout Plugged Version) -->
+<main>
+  <section class="hero">
+    <div class="left">
+      <div class="sub" id="helloLine">Logged in as: <span id="userEmail">Admin</span></div>
+      <h2>Hone-A-Way Hardware</h2>
+      <p>Track inventory, tools, and hardware sales.</p>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="card">
+      <h3>Total Hardware Sales</h3>
+      <p class="stat-value" id="hardwareSales">$0</p>
+    </div>
+
+    <div class="card">
+      <h3>Items in Stock</h3>
+      <p class="stat-value" id="hardwareStock">0</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Hardware Inventory</h3>
+    <table style="width:100%;border-collapse:collapse;margin-top:15px;background:rgba(0,0,0,0.55);border-radius:10px;overflow:hidden;">
+      <thead>
+        <tr style="background:#ffcc00;color:#000;">
+          <th>Tool</th>
+          <th>Category</th>
+          <th>Quantity</th>
+          <th>Price ($)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="hardwareTable">
+        <tr><td colspan="5" style="text-align:center;color:#ccc;">Loading data...</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "FT-auth.page.html";
+    return;
+  }
+
+  // ✅ Decode token to show user email
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    document.getElementById("userEmail").textContent =
+      payload.email ? payload.email : "Admin";
+  } catch (err) {
+    console.error("Invalid token:", err);
+    localStorage.removeItem("token");
+    window.location.href = "FT-auth.page.html";
+  }
+
+  // ✅ Load local hardware data
+  loadHardwareData();
+});
+
+async function loadHardwareData() {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch("http://localhost:5000/api/hardware", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to load hardware data");
+
+    // ✅ Update stats
+    document.getElementById("hardwareSales").textContent = "$" + (data.sales || 0);
+    document.getElementById("hardwareStock").textContent = data.stock || 0;
+
+    const tbody = document.getElementById("hardwareTable");
+    tbody.innerHTML = "";
+
+    (data.items || []).forEach((item) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.name}</td>
+        <td>${item.category}</td>
+        <td>${item.qty}</td>
+        <td>${item.price}</td>
+        <td>${item.status}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("❌ Hardware fetch error:", err);
+    document.getElementById("hardwareTable").innerHTML =
+      "<tr><td colspan='5' style='text-align:center;color:#ff5555;'>Failed to load data.</td></tr>";
+  }
+}
+</script>

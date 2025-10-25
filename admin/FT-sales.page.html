@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales — Supa Dillie-Cious Admin</title>
+  <style>
+    :root{
+      --accent:#ffcc00;
+      --glass:rgba(0,0,0,.55);
+      --glass2:rgba(0,0,0,.35);
+      --line:rgba(255,255,255,.08);
+      --glow:0 10px 30px rgba(0,0,0,.35);
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:#fff;
+      background:url("./assets/supa.png") no-repeat center center fixed;
+      background-size:cover;
+      position:relative;
+      overflow-x:hidden;
+    }
+    .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.45));z-index:0}
+
+    /* Header with centered burger */
+    header{
+      position:sticky;top:0;z-index:5;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 22px;margin:10px;
+      background:var(--glass2);backdrop-filter:blur(6px);
+      border-radius:14px;box-shadow:var(--glow);
+    }
+    header h1{
+      margin:0;font-size:1.25rem;letter-spacing:.4px;color:var(--accent);
+      text-shadow:0 2px 10px rgba(0,0,0,.6);
+    }
+    /* center group for burger so it sits visually in the middle area */
+    .hdr-left,.hdr-right{width:96px} /* spacers to center the middle group */
+    .hdr-mid{display:flex;align-items:center;gap:10px;justify-content:center;flex:1}
+    .menu-btn{
+      font-size:26px;line-height:1;background:transparent;border:2px solid var(--accent);
+      color:var(--accent);cursor:pointer;padding:6px 12px;border-radius:10px;
+      transition:transform .2s ease, background .2s ease;
+    }
+    .menu-btn:hover{transform:scale(1.05);background:rgba(0,0,0,.25)}
+
+    /* Dropdown menu (same position on all pages) */
+    .menu{
+      position:fixed;top:72px;left:50%;
+      transform:translateX(-50%);
+      z-index:6;width:230px;padding:10px 0;border-radius:12px;
+      background:var(--glass);backdrop-filter:blur(8px);box-shadow:var(--glow);
+      display:none;flex-direction:column;overflow:auto;max-height:70vh;
+      border:1px solid var(--line);
+    }
+    .menu.show{display:flex}
+    .menu a{
+      color:#fff;text-decoration:none;padding:12px 16px;display:block;
+      transition:background .2s ease;
+    }
+    .menu a:hover{background:rgba(255,204,0,.15)}
+    .menu hr{border:0;border-top:1px solid var(--line);margin:6px 0}
+
+    main{position:relative;z-index:1;max-width:1100px;margin:14px auto;padding:0 16px}
+
+    /* Summary strip */
+    .summary{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:12px;margin-bottom:12px;
+    }
+    .sum-card{
+      background:var(--glass);backdrop-filter:blur(8px);
+      border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--glow);
+      display:flex;flex-direction:column;gap:4px;animation:fadeUp .5s ease both;
+    }
+    .sum-card h3{margin:0;color:var(--accent);font-size:.95rem;letter-spacing:.3px}
+    .sum-val{font-size:1.8rem;font-weight:900;letter-spacing:.5px}
+
+    /* Table */
+    .table-card{
+      background:var(--glass);backdrop-filter:blur(8px);
+      border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--glow);
+      animation:fadeUp .6s ease .05s both;
+    }
+    table{width:100%;border-collapse:collapse}
+    thead th{
+      text-align:left;font-weight:800;color:var(--accent);padding:10px 8px;border-bottom:1px solid var(--line);
+      position:sticky;top:0;background:rgba(0,0,0,.25);backdrop-filter:blur(4px);
+    }
+    tbody td{padding:10px 8px;border-bottom:1px solid var(--line)}
+    tbody tr{animation:fadeUp .45s ease both}
+    tbody tr:hover{background:rgba(255,255,255,.04)}
+    .right{text-align:right}
+    .muted{opacity:.85}
+
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+  </style>
+  <link rel="stylesheet" href="assets/hover-theme.css">
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <header>
+    <div class="hdr-left"></div>
+    <div class="hdr-mid">
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+    </div>
+    <div class="hdr-right"></div>
+  </header>
+
+  <nav class="menu" id="menu">
+    <a href="FT-dashboard.page.html">Dashboard</a>
+    <a href="FT-products.page.html">Products</a>
+    <a href="FT-orders.page.html">Orders</a>
+    <a href="FT-sales.page.html" class="active">Sales</a>
+    <a href="FT-suppliers.page.html">Suppliers</a>
+    <hr>
+    <a href="FT-settings.page.html">Settings</a>
+    <a href="FT-logout.page.html">Logout</a>
+  </nav>
+
+  <main>
+    <section class="summary">
+      <div class="sum-card" style="animation-delay:.02s">
+        <h3>Total Sales</h3>
+        <div class="sum-val" id="sumTotal">$0</div>
+      </div>
+      <div class="sum-card" style="animation-delay:.04s">
+        <h3>Orders</h3>
+        <div class="sum-val" id="sumOrders">0</div>
+      </div>
+      <div class="sum-card" style="animation-delay:.06s">
+        <h3>Avg. Sale</h3>
+        <div class="sum-val" id="sumAvg">$0</div>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th class="right">Qty</th>
+            <th class="right">Total ($)</th>
+          </tr>
+        </thead>
+        <tbody id="salesBody">
+          <!-- rows injected -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    /* ===== Menu toggle (centered, same as dashboard style) ===== */
+    const menuBtn = document.getElementById("menuBtn");
+    const menu = document.getElementById("menu");
+    menuBtn.addEventListener("click", ()=> menu.classList.toggle("show"));
+    document.addEventListener("click", (e)=>{
+      if (!menu.contains(e.target) && !menuBtn.contains(e.target)) menu.classList.remove("show");
+    });
+
+    /* ===== Helpers ===== */
+    const API_ROOT = localStorage.getItem("API_URL") || "http://localhost:5000/api";
+    const $ = sel => document.querySelector(sel);
+    const formatMoney = n => "$" + Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});
+    const formatQty = q => Number(q||0).toLocaleString();
+    const formatDate = d => new Date(d).toLocaleString();
+
+    // Count-up animation for summary
+    function countTo(el, end, prefix=""){
+      const start = 0, dur = 700, t0 = performance.now();
+      function step(now){
+        const p = Math.min(1, (now - t0)/dur);
+        const v = start + (end - start)*p;
+        el.textContent = prefix ? prefix + Math.round(v).toLocaleString() : Math.round(v).toLocaleString();
+        if (p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    function countMoney(el, end){
+      const start=0, dur=700, t0=performance.now();
+      function step(now){
+        const p=Math.min(1,(now-t0)/dur);
+        const v=start+(end-start)*p;
+        el.textContent = formatMoney(v);
+        if(p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    /* ===== Load sales ===== */
+    async function loadSales(){
+      const body = $("#salesBody");
+      body.innerHTML = "";
+
+      try{
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch(`${API_ROOT}/sales`, { headers });
+        const data = await res.json();
+        if (!res.ok || !Array.isArray(data)) throw new Error(data.message || "Failed to load sales");
+
+        // totals
+        const orders = data.length;
+        const total = data.reduce((s, r)=> s + Number(r.totalPrice || r.total || 0), 0);
+        const avg = orders ? total / orders : 0;
+
+        // animate summary
+        countMoney($("#sumTotal"), total);
+        countTo($("#sumOrders"), orders);
+        countMoney($("#sumAvg"), avg);
+
+        // rows
+        data.forEach((s, i)=>{
+          // product may be populated or a name field
+          const productName =
+            (s.product && (s.product.name || s.product.title)) ||
+            s.name || s.productName || "—";
+          const qty = s.quantity || s.qty || 0;
+          const totalCell = s.totalPrice ?? s.total ?? 0;
+          const when = s.date || s.createdAt || Date.now();
+          const who = s.customerName || s.customer || s.customerEmail || "—";
+
+          const tr = document.createElement("tr");
+          tr.style.animationDelay = (0.02 * i) + "s";
+          tr.innerHTML = `
+            <td class="muted">${formatDate(when)}</td>
+            <td>${who}</td>
+            <td>${productName}</td>
+            <td class="right">${formatQty(qty)}</td>
+            <td class="right">${formatMoney(totalCell)}</td>
+          `;
+          body.appendChild(tr);
+        });
+
+      }catch(err){
+        console.error("Load sales failed:", err);
+        // show a friendly row
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="5" class="muted">Could not load sales right now.</td>`;
+        body.appendChild(tr);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadSales);
+  </script>
+</body>
+</html>

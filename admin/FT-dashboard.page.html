@@ -1,0 +1,368 @@
+<!-- FT-dashboard.page.html (New Layout) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supa Dillie-Cious Admin Dashboard</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <style>
+    :root {
+      --accent: #ffcc00;
+      --glass: rgba(0, 0, 0, 0.55);
+      --glass2: rgba(0, 0, 0, 0.35);
+      --glow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: #fff;
+      background: url("assets/supa.png") no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
+      z-index: 0;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 22px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      box-shadow: var(--glow);
+    }
+
+    header h1 {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.4px;
+      color: var(--accent);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .menu-btn {
+      font-size: 26px;
+      background: transparent;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 10px;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .menu-btn:hover {
+      transform: scale(1.05);
+      background: var(--accent);
+      color: #000;
+    }
+
+    .menu {
+      position: fixed;
+      top: 66px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12;
+      width: 230px;
+      padding: 10px 0;
+      border-radius: 12px;
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--glow);
+      display: none;
+      flex-direction: column;
+      overflow: auto;
+      max-height: 70vh;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      animation: fadeIn 0.25s ease;
+    }
+
+    .menu.show { display: flex; }
+
+    .menu a {
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 16px;
+      display: block;
+      transition: background 0.2s ease;
+    }
+
+    .menu a:hover {
+      background: rgba(255, 204, 0, 0.2);
+    }
+
+    .menu hr {
+      border: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 6px 0;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 120px auto 40px;
+      padding: 0 16px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--glass2);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--glow);
+      animation: fadeUp 0.6s ease 0.05s both;
+    }
+
+    .hero .left h2 {
+      margin: 0.2rem 0 0.35rem;
+      font-size: 1.3rem;
+      color: var(--accent);
+    }
+
+    .hero .left .sub { opacity: 0.9; }
+
+    .hero .btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--glow);
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .card h3 {
+      margin: 0 0 2px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      color: var(--accent);
+    }
+
+    .stat-value {
+      font-size: 2.1rem;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      margin: 4px 0 10px;
+    }
+
+    .bar-wrap {
+      height: 86px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      position: relative;
+    }
+
+    .bar {
+      width: 34%;
+      margin-left: 10px;
+      border-radius: 10px 10px 0 0;
+      background: linear-gradient(180deg, #9dff6a, #ffe600);
+      height: 0;
+      transition: height 0.9s cubic-bezier(.2, .8, .2, 1);
+      box-shadow: 0 8px 18px rgba(255, 230, 0, 0.35);
+    }
+
+    .chart-card {
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--glow);
+      margin-top: 12px;
+    }
+
+    .chart-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .chart-head h3 { margin: 0; color: var(--accent); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -8px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/hover-theme.css">
+</head>
+
+<body>
+  <div class="overlay"></div>
+
+  <header>
+    <h1>Supa Dillie-Cious Admin Dashboard</h1>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+  </header>
+
+  <nav class="menu" id="menu">
+    <a href="FT-dashboard.page.html" class="active">Dashboard</a>
+    <a href="FT-products.page.html">Products</a>
+    <a href="FT-orders.page.html">Orders</a>
+    <a href="FT-sales.page.html">Sales</a>
+    <a href="FT-suppliers.page.html">Suppliers</a>
+    <hr />
+    <a href="FT-settings.page.html">Settings</a>
+    <a href="FT-logout.page.html">Logout</a>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="left">
+        <div class="sub" id="helloLine">Logged in as: <span id="who">Admin</span></div>
+        <h2>Overview</h2>
+      </div>
+      <button class="btn" onclick="location.href='FT-products.page.html'">Go to Products</button>
+    </section>
+
+    <section class="stats">
+      <div class="card"><h3>Products</h3><div class="stat-value" id="productsVal">0</div><div class="bar-wrap"><div class="bar" id="barProducts"></div></div></div>
+      <div class="card"><h3>Orders</h3><div class="stat-value" id="ordersVal">0</div><div class="bar-wrap"><div class="bar" id="barOrders"></div></div></div>
+      <div class="card"><h3>Sales ($)</h3><div class="stat-value" id="salesVal">$0</div><div class="bar-wrap"><div class="bar" id="barSales"></div></div></div>
+      <div class="card"><h3>Users</h3><div class="stat-value" id="usersVal">0</div><div class="bar-wrap"><div class="bar" id="barUsers"></div></div></div>
+    </section>
+
+    <!-- 🧾 LIVE SALES FEED PANEL -->
+    <div id="liveSalesPanel" class="card glassy-card" style="margin-top:20px; padding:15px;">
+      <h2 style="color:#ffcc00; margin-bottom:10px;">Live Sales Feed</h2>
+      <div id="salesFeedList" style="max-height:220px; overflow-y:auto; font-size:0.9rem; color:white;">
+        <p style="opacity:0.7;">No recent sales yet...</p>
+      </div>
+    </div>
+
+    <!-- 📈 SMART ANALYTICS SUMMARY -->
+    <div id="smartAnalytics" class="card glassy-card" style="margin-top:20px; padding:15px;">
+      <h2 style="color:#ffcc00; margin-bottom:10px;">Smart Analytics Summary</h2>
+      <p id="dailySales" style="color:white; margin:3px 0;">Total Sales Today: 0</p>
+      <p id="highestSale" style="color:white; margin:3px 0;">Highest Sale: $0.00</p>
+      <p id="averageSale" style="color:white; margin:3px 0;">Average Sale: $0.00</p>
+      <p id="lastTransaction" style="color:white; margin:3px 0;">Last Transaction: —</p>
+    </div>
+
+    <!-- 🤖 AI INSIGHTS PANEL -->
+    <div id="aiInsights" class="card glassy-card" style="margin-top:20px; padding:15px;">
+      <h2 style="color:#ffcc00; margin-bottom:10px;">AI-Driven Insights</h2>
+      <p id="insightText" style="color:white; font-style:italic;">Waiting for sales data…</p>
+    </div>
+
+    <!-- 📜 STAGE 9: SALES HISTORY & FILTERS -->
+    <div id="salesHistory" class="card glassy-card" style="margin-top:20px; padding:15px;">
+      <h2 style="color:#ffcc00; margin-bottom:10px;">Sales History & Filters</h2>
+      
+      <!-- Filter Controls -->
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+        <input type="date" id="filterFrom" placeholder="From Date" style="padding:5px; border-radius:5px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,204,0,0.3);">
+        <input type="date" id="filterTo" placeholder="To Date" style="padding:5px; border-radius:5px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,204,0,0.3);">
+        
+        <select id="filterPayment" style="padding:5px; border-radius:5px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,204,0,0.3);">
+          <option value="">All Payments</option>
+          <option value="Cash">Cash Only</option>
+          <option value="Card">Card Only</option>
+        </select>
+        
+        <input type="number" id="filterMinTotal" placeholder="Min $" style="width:80px; padding:5px; border-radius:5px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,204,0,0.3);">
+        <input type="number" id="filterMaxTotal" placeholder="Max $" style="width:80px; padding:5px; border-radius:5px; background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,204,0,0.3);">
+        
+        <button id="btnApplyFilters" style="padding:5px 15px; background:#ffcc00; color:#000; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Apply Filters</button>
+        <button id="btnClearFilters" style="padding:5px 15px; background:rgba(255,255,255,0.2); color:white; border:none; border-radius:5px; cursor:pointer;">Clear</button>
+      </div>
+      
+      <!-- Results Table -->
+      <div style="overflow-x:auto; max-height:400px; overflow-y:auto;">
+        <table id="salesTable" style="width:100%; color:white; border-collapse:collapse; font-size:0.9rem;">
+          <thead style="position:sticky; top:0; background:rgba(0,0,0,0.8);">
+            <tr style="border-bottom:2px solid rgba(255,204,0,0.5);">
+              <th style="padding:8px; text-align:left;">Date/Time</th>
+              <th style="padding:8px; text-align:left;">Product</th>
+              <th style="padding:8px; text-align:center;">Qty</th>
+              <th style="padding:8px; text-align:right;">Total</th>
+              <th style="padding:8px; text-align:center;">Payment</th>
+            </tr>
+          </thead>
+          <tbody id="salesTableBody">
+            <tr><td colspan="5" style="text-align:center; padding:20px; opacity:0.7;">Loading sales history...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      <div id="pagination" style="margin-top:10px; text-align:center; color:white;">
+        <button id="btnPrevPage" style="padding:5px 10px; background:rgba(255,255,255,0.2); color:white; border:none; border-radius:5px; margin:0 5px; cursor:pointer;">← Prev</button>
+        <span id="pageInfo" style="margin:0 10px;">Page 1 of 1</span>
+        <button id="btnNextPage" style="padding:5px 10px; background:rgba(255,255,255,0.2); color:white; border:none; border-radius:5px; margin:0 5px; cursor:pointer;">Next →</button>
+      </div>
+    </div>
+
+    <section class="chart-card">
+      <div class="chart-head">
+        <h3>Sales Overview</h3>
+        <div style="font-size:.9rem;opacity:.85">
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#60a5fa;margin-right:6px;vertical-align:middle"></span> Sales
+          &nbsp;&nbsp;
+          <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f97316;margin-right:6px;vertical-align:middle"></span> Orders
+        </div>
+      </div>
+      <canvas id="overviewChart" height="120"></canvas>
+    </section>
+  </main>
+  <script src="FT-dashboard.script.js"></script>
+</body>
+</html>

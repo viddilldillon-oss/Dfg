@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Supa Dillie-Cious Mart</title>
+  <style>
+    /* === GLOBAL RESET === */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+
+    body {
+      background: url("assets/supa.png") center/cover no-repeat fixed,
+                  linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85));
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.7);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      border-bottom: 2px solid gold;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      color: gold;
+    }
+
+    header button {
+      background: gold;
+      color: black;
+      border: none;
+      padding: 6px 12px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    main {
+      width: 100%;
+      max-width: 450px;
+      margin-top: 40px;
+      padding: 25px;
+      background: rgba(0,0,0,0.65);
+      border: 2px solid gold;
+      border-radius: 15px;
+      box-shadow: 0 0 12px rgba(255,215,0,0.4);
+    }
+
+    h2 {
+      color: gold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    form label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      color: #ffd700;
+      font-weight: bold;
+    }
+
+    form input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ffd700;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    form input:disabled {
+      background: rgba(255,255,255,0.05);
+      color: #ccc;
+    }
+
+    form button {
+      margin-top: 18px;
+      width: 100%;
+      padding: 12px;
+      background: gold;
+      border: none;
+      color: black;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+
+    form button:hover {
+      background: #ffdf33;
+      transform: scale(1.02);
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 25px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+  </style>
+  <link rel="stylesheet" href="css/hover-theme.css">
+</head>
+
+<body>
+  <header>
+    <h1>Supa Dillie-Cious Mart</h1>
+    <button onclick="window.location.href='index.html'">Home</button>
+  </header>
+
+  <main>
+    <h2>Checkout</h2>
+    <form id="checkoutForm">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" placeholder="Enter your full name" required>
+
+      <label for="email">Email (optional)</label>
+      <input type="email" id="email" placeholder="Enter your email">
+
+      <label for="phone">Phone (optional)</label>
+      <input type="text" id="phone" placeholder="Enter your phone">
+
+      <label for="address">Shipping Address</label>
+      <input type="text" id="address" placeholder="Enter your address" required>
+
+      <label for="total">Total</label>
+      <input type="text" id="total" disabled>
+
+      <button type="submit">Proceed to Payment</button>
+    </form>
+  </main>
+
+  <footer>
+    &copy; 2025 Supa Dillie-Cious Mart — All Rights Reserved.
+  </footer>
+
+  
+
+  <!-- Cart utilities -->
+  <script src="js/FT-utils.js"></script>
+  
+  <!-- Checkout logic -->
+  <script>
+    // Inline checkout logic to avoid caching issues
+    // CART_KEY is already defined in FT-utils.js
+    
+    // Wait for DOM
+    document.addEventListener("DOMContentLoaded", function() {
+      console.log("✅ Checkout initialized");
+      
+      let calculatedTotal = 0;
+
+      // ======= UPDATE TOTAL (REUSE CART LOGIC) =======
+      function updateTotal() {
+        try {
+          // ✅ Read from same key used by cart
+          const cartData = localStorage.getItem("supa_cart");
+          if (!cartData) {
+            console.warn("⚠️ No cart data found.");
+            document.getElementById("total").value = "$0.00";
+            return;
+          }
+
+          // ✅ Parse and calculate
+          const items = JSON.parse(cartData);
+          if (!Array.isArray(items) || !items.length) {
+            document.getElementById("total").value = "$0.00";
+            return;
+          }
+
+          let total = 0;
+          for (const item of items) {
+            const price = parseFloat(item.price) || 0;
+            const qty = parseInt(item.qty) || 1;
+            total += price * qty;
+          }
+          calculatedTotal = total;
+
+          // ✅ Format total
+          const totalInput = document.getElementById("total");
+          if (totalInput) {
+            totalInput.value = "$" + total.toFixed(2);
+            console.log("✅ Checkout total:", totalInput.value);
+          } else {
+            console.warn("⚠️ Total input not found on page");
+          }
+        } catch (err) {
+          console.error("❌ Error calculating total:", err);
+          document.getElementById("total").value = "$0.00";
+        }
+      }
+      
+      updateTotal();
+      
+      // Handle form submission
+      const form = document.getElementById("checkoutForm");
+      if (form) {
+        form.onsubmit = async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          console.log("🚀 Checkout submitted");
+          
+          const name = document.getElementById("name").value.trim();
+          const email = document.getElementById("email").value.trim();
+          const phone = document.getElementById("phone").value.trim();
+          const address = document.getElementById("address").value.trim();
+          
+          const items = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+          
+          if (!items.length) {
+            alert("Your cart is empty!");
+            return false;
+          }
+          
+          try {
+            console.log("📤 Sending to /api/clover/start...");
+            const response = await fetch("http://localhost:5000/api/clover/start", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                amount: calculatedTotal * 100, // Clover expects amount in cents
+                currency: "usd",
+                email: email
+              })
+            });
+            
+            const data = await response.json();
+            console.log("📦 Response:", data);
+            
+            if (data.href) {
+              window.location.href = data.href; // Redirect to Clover checkout
+            } else {
+              alert("Could not create Clover checkout session.");
+            }
+          } catch (err) {
+            console.error("❌ Error:", err);
+            alert("Error: " + err.message);
+          }
+          
+          return false;
+        };
+        console.log("✅ Form handler attached");
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Stats API</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #00ff00; }
+    pre { background: #000; padding: 15px; border: 1px solid #00ff00; }
+    button { background: #00ff00; color: #000; border: none; padding: 10px 20px; cursor: pointer; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Stats API Debugger</h1>
+  <button onclick="testAPI()">Test /api/stats</button>
+  <button onclick="location.reload()">Hard Reload</button>
+  
+  <h2>Response:</h2>
+  <pre id="output">Click button to test...</pre>
+
+  <script>
+    async function testAPI() {
+      const output = document.getElementById('output');
+      output.textContent = 'Loading...';
+      
+      try {
+        const timestamp = Date.now();
+        const url = `http://localhost:5000/api/stats?t=${timestamp}`;
+        
+        console.log('Fetching from:', url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        console.log('Response status:', response.status);
+        
+        const data = await response.json();
+        
+        console.log('Response data:', data);
+        
+        output.textContent = JSON.stringify(data, null, 2);
+        
+        // Show parsed values
+        const salesValue = Number(data.sales || 0);
+        output.textContent += `\n\n=================\nParsed Sales: ${salesValue}\nFormatted: $${salesValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+      } catch (err) {
+        output.textContent = `ERROR: ${err.message}\n\n${err.stack}`;
+        console.error('Fetch error:', err);
+      }
+    }
+    
+    // Auto-run on load
+    testAPI();
+  </script>
+</body>
+</html>

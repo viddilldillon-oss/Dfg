@@ -1,0 +1,149 @@
+<!-- FT-auth.page.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login - Supa Dillie-Cious</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url("assets/supa.png") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* overlay for contrast */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 0;
+    }
+
+    .login-box {
+      position: relative;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 40px;
+      border-radius: 14px;
+      width: 360px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    h1 {
+      color: #ffcc00;
+      margin-bottom: 10px;
+      text-shadow: 0 0 8px rgba(255, 204, 0, 0.8);
+    }
+
+    p {
+      color: #ccc;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: bold;
+      color: #ffcc00;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      outline: none;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      background: #ffcc00;
+      color: #000;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      font-size: 1rem;
+    }
+
+    .error-message {
+      color: #ff4d4d;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #aaa;
+      font-size: 0.8rem;
+    }
+  </style>
+  <link rel="stylesheet" href="assets/hover-theme.css">
+</head>
+
+<body>
+  <div class="overlay"></div>
+
+  <div class="login-box">
+    <h1>Admin Login</h1>
+    <p>Sign in to access your dashboard</p>
+
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="you@email.com" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password" required>
+
+      <button type="submit">Login</button>
+      <div id="error" class="error-message"></div>
+    </form>
+
+    <footer>
+      <p>© 2025 Supa Dillie-Cious Mart</p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Login failed");
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("API_URL", "http://localhost:5000/api"); // Set the server URL for all other pages
+        window.location.href = "FT-dashboard.page.html";
+      } catch (err) {
+        document.getElementById("error").textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

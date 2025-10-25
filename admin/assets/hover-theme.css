@@ -1,0 +1,158 @@
+/* ===== Supa Dillie-Cious Hover Theme =====
+   Consistent yellow (#ffcc00) hover effects across all interactive elements
+   Add this file to any page with: <link rel="stylesheet" href="assets/hover-theme.css">
+*/
+
+:root {
+  --hover-yellow: #ffcc00;
+  --hover-transition: 0.25s ease;
+}
+
+/* ===== BUTTONS ===== */
+button:hover,
+.btn:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  background: var(--hover-yellow) !important;
+  color: #000 !important;
+  transition: all var(--hover-transition);
+}
+
+/* ===== FORM INPUTS ===== */
+input:not([type="submit"]):not([type="button"]),
+textarea,
+select {
+  color: #ffffff !important; /* White text for readability */
+}
+
+input:hover:not([type="submit"]):not([type="button"]),
+textarea:hover,
+select:hover {
+  background: rgba(255, 204, 0, 0.15) !important;
+  border-color: var(--hover-yellow) !important;
+  transition: all var(--hover-transition);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  background: rgba(255, 204, 0, 0.25) !important;
+  border-color: var(--hover-yellow) !important;
+  box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.2);
+  outline: none;
+}
+
+/* ===== TEXT SELECTION - Keep white text on gold background ===== */
+/* Input/Textarea Selection */
+input:not([type="submit"]):not([type="button"])::selection,
+textarea::selection,
+select::selection {
+  background: #ffd633 !important; /* Gold highlight */
+  color: #ffffff !important; /* White text */
+}
+
+input:not([type="submit"]):not([type="button"])::-moz-selection,
+textarea::-moz-selection,
+select::-moz-selection {
+  background: #ffd633 !important; /* Gold highlight for Firefox */
+  color: #ffffff !important; /* White text */
+}
+
+/* Global Text Selection - All page text */
+::selection {
+  background: #ffd633 !important; /* Gold highlight */
+  color: #ffffff !important; /* White text */
+}
+
+::-moz-selection {
+  background: #ffd633 !important; /* Gold highlight for Firefox */
+  color: #ffffff !important; /* White text */
+}
+
+/* ===== LINKS & NAVIGATION ===== */
+a:hover,
+.menu a:hover,
+nav a:hover {
+  background: rgba(255, 204, 0, 0.2) !important;
+  transition: background var(--hover-transition);
+}
+
+/* ===== TABLE ROWS ===== */
+tr:hover,
+tbody tr:hover {
+  background: rgba(255, 204, 0, 0.1) !important;
+  transition: background var(--hover-transition);
+}
+
+/* ===== TABLE CELLS (for editable sheets) ===== */
+td:hover {
+  background: rgba(255, 204, 0, 0.08) !important;
+  transition: background var(--hover-transition);
+}
+
+/* ===== CARDS & CONTAINERS ===== */
+.card:hover,
+.folder:hover,
+.pcard:hover,
+.product-card:hover {
+  border-color: var(--hover-yellow) !important;
+  box-shadow: 0 4px 20px rgba(255, 204, 0, 0.3) !important;
+  transition: all var(--hover-transition);
+}
+
+/* ===== LIST ITEMS ===== */
+li:hover {
+  background: rgba(255, 204, 0, 0.15) !important;
+  transition: background var(--hover-transition);
+}
+
+/* ===== SIDEBAR LINKS ===== */
+.sidebar a:hover,
+.sidebar li:hover {
+  background: var(--hover-yellow) !important;
+  color: #000 !important;
+  transition: all var(--hover-transition);
+}
+
+/* ===== SPECIAL: Keep text readable on hover ===== */
+/* Labels, headings, paragraphs, and general text stay white */
+label:hover,
+p:hover,
+span:hover,
+div:hover,
+h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover {
+  color: #ffffff !important;
+}
+
+/* Buttons and interactive elements keep their specific colors */
+button:hover,
+.btn:hover,
+a.btn:hover,
+.sidebar a:hover {
+  color: #000 !important;
+}
+
+/* ===== DROPDOWN MENUS ===== */
+.dropdown-item:hover,
+option:hover {
+  background: var(--hover-yellow) !important;
+  color: #000 !important;
+}
+
+/* ===== Respect existing transforms/scales ===== */
+.btn:hover,
+button:hover {
+  transform: scale(1.05) !important;
+}
+
+.folder:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* ===== ICONS & BADGES ===== */
+.icon:hover,
+.badge:hover {
+  background: var(--hover-yellow) !important;
+  color: #000 !important;
+  transition: all var(--hover-transition);
+}

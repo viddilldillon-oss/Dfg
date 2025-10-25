@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supa Dillie-cious – Logout</title>
+  <link rel="stylesheet" href="../css/FT-logout.style.css" />
+
+<style>
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  background: url("../assets/flag.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+}
+.btn { cursor:pointer; }
+.sidebar { width: 220px; background: rgba(0,0,0,0.85); padding:20px; height:100vh; position:fixed; left:0; top:0; }
+.sidebar h2 { color:#ffcc00; text-align:center; margin-bottom:20px; }
+.sidebar ul { list-style:none; padding:0; }
+.sidebar ul li { margin:12px 0; }
+.sidebar ul li a { display:block; padding:10px; background:rgba(0,0,0,0.5); color:#fff; text-decoration:none; border-radius:8px; }
+.sidebar ul li a.active, .sidebar ul li a:hover { background:#ffcc00; color:#000; }
+.main-content { margin-left:240px; padding:20px; }
+.card { background: rgba(0,0,0,0.6); padding: 16px; border-radius: 12px; }
+
+.logout-actions{display:flex;gap:12px;} .btn{background:#ffcc00;border:none;padding:10px 14px;border-radius:8px;color:#000;font-weight:bold;} .btn.cancel{background:#999;color:#fff;}
+</style>
+  <link rel="stylesheet" href="assets/hover-theme.css">
+</head>
+<body>
+<div class="sidebar">
+  <h2>Admin Menu</h2>
+  <ul>
+    <li><a href="FT-dashboard.page.html">Dashboard</a></li>
+    <li><a href="FT-products.page.html">Products</a></li>
+    <li><a href="FT-sales.page.html">Sales</a></li>
+    <li><a href="FT-orders.page.html">Orders</a></li>
+    <li><a href="FT-hardware.page.html">Hardware</a></li>
+    <li><a href="FT-upload.page.html">Upload</a></li>
+    <li><a href="FT-settings.page.html">Settings</a></li>
+    <li><a href="FT-logout.page.html">Logout</a></li>
+  </ul>
+</div>
+  <div class="main-content">
+    <h1>Confirm Logout</h1>
+    <p>Are you sure you want to log out?</p>
+    <div class="logout-actions">
+      <button id="confirmLogout" class="btn">Yes, Log Out</button>
+      <a href="FT-dashboard.page.html" class="btn cancel">Cancel</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("confirmLogout").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "FT-auth.page.html";
+    });
+  </script>
+</body>
+</html>

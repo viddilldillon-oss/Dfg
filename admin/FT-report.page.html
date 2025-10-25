@@ -1,0 +1,404 @@
+<!-- FILE: admin/FT-report.page.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supa Dillie-Cious Reports</title>
+
+  <style>
+    :root {
+      --accent: #ffcc00;
+      --glass: rgba(0, 0, 0, 0.55);
+      --glow: 0 4px 20px rgba(255, 204, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #000000 0%, #1a1a2e 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--glow);
+    }
+
+    h1 {
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .controls {
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--glow);
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .controls label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.9rem;
+    }
+
+    .controls input, .controls select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 204, 0, 0.3);
+      font-size: 0.9rem;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .controls button:hover {
+      transform: scale(1.05);
+    }
+
+    .controls button.secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .report-card {
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--glow);
+    }
+
+    .report-card h2 {
+      color: var(--accent);
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .summary-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 204, 0, 0.2);
+    }
+
+    .summary-item .label {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+
+    .summary-item .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      text-align: left;
+      border-bottom: 2px solid rgba(255, 204, 0, 0.5);
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      opacity: 0.7;
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      .controls, .back-link {
+        display: none;
+      }
+      .report-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>📊 Sales Reports</h1>
+      <p>Generate comprehensive reports for revenue tracking and analysis</p>
+    </header>
+
+    <div class="controls">
+      <label>
+        Report Type
+        <select id="reportType">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </label>
+
+      <label>
+        From Date
+        <input type="date" id="fromDate" />
+      </label>
+
+      <label>
+        To Date
+        <input type="date" id="toDate" />
+      </label>
+
+      <button id="btnGenerate">Run Report</button>
+      <button id="btnPrint" class="secondary">🖨 Print</button>
+      <button id="btnDownload" class="secondary">📥 Download CSV</button>
+    </div>
+
+    <div id="reportContent">
+      <div class="loading">
+        Select report parameters and click "Run Report" to generate...
+      </div>
+    </div>
+
+    <a href="FT-dashboard.page.html" class="back-link">← Back to Dashboard</a>
+  </div>
+
+  <script>
+    const API_ROOT = 'http://localhost:5000/api';
+    let currentReport = null;
+
+    // Set default dates
+    const today = new Date();
+    const weekAgo = new Date(today.setDate(today.getDate() - 7));
+    document.getElementById('fromDate').value = weekAgo.toISOString().split('T')[0];
+    document.getElementById('toDate').value = new Date().toISOString().split('T')[0];
+
+    // Generate Report
+    document.getElementById('btnGenerate').addEventListener('click', async () => {
+      try {
+        const type = document.getElementById('reportType').value;
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
+
+        document.getElementById('reportContent').innerHTML = '<div class="loading">Generating report...</div>';
+
+        const params = new URLSearchParams({ type, from, to });
+        const res = await fetch(`${API_ROOT}/reports/generate?${params}`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Failed to generate report');
+
+        currentReport = data;
+        renderReport(data);
+        console.log('📊 Report generated:', data);
+      } catch (err) {
+        console.error('❌ Report error:', err);
+        document.getElementById('reportContent').innerHTML = `
+          <div class="report-card">
+            <p style="color:#ff6b6b;">Error: ${err.message}</p>
+          </div>
+        `;
+      }
+    });
+
+    // Render Report
+    function renderReport(data) {
+      const html = `
+        <div class="report-card">
+          <h2>📈 Summary (${new Date(data.period.from).toLocaleDateString()} - ${new Date(data.period.to).toLocaleDateString()})</h2>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="label">Total Transactions</div>
+              <div class="value">${data.summary.totalTransactions}</div>
+            </div>
+            <div class="summary-item">
+              <div class="label">Total Revenue</div>
+              <div class="value">$${data.summary.totalRevenue}</div>
+            </div>
+            <div class="summary-item">
+              <div class="label">POS Sales</div>
+              <div class="value">${data.summary.posTransactions}</div>
+            </div>
+            <div class="summary-item">
+              <div class="label">Online Orders</div>
+              <div class="value">${data.summary.onlineOrders}</div>
+            </div>
+            <div class="summary-item">
+              <div class="label">Average Transaction</div>
+              <div class="value">$${data.summary.averageTransaction}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <h2>💳 Payment Breakdown</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Payment Method</th>
+                <th>Transactions</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>💵 Cash</td>
+                <td>${data.paymentBreakdown.cash.count}</td>
+                <td>$${data.paymentBreakdown.cash.revenue}</td>
+              </tr>
+              <tr>
+                <td>💳 Card</td>
+                <td>${data.paymentBreakdown.card.count}</td>
+                <td>$${data.paymentBreakdown.card.revenue}</td>
+              </tr>
+              <tr>
+                <td>🌐 Online</td>
+                <td>${data.paymentBreakdown.online.count}</td>
+                <td>$${data.paymentBreakdown.online.revenue}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="report-card">
+          <h2>🏆 Top Products</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Units Sold</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.topProducts.map(p => `
+                <tr>
+                  <td>${p.name}</td>
+                  <td>${p.quantity}</td>
+                  <td>$${p.revenue.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      document.getElementById('reportContent').innerHTML = html;
+    }
+
+    // Print Report
+    document.getElementById('btnPrint').addEventListener('click', () => {
+      if (!currentReport) {
+        alert('Please generate a report first');
+        return;
+      }
+      window.print();
+    });
+
+    // Download CSV
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      if (!currentReport) {
+        alert('Please generate a report first');
+        return;
+      }
+
+      const rows = [
+        ['Supa Dillie-Cious Mart - Sales Report'],
+        [''],
+        ['Period', `${new Date(currentReport.period.from).toLocaleDateString()} - ${new Date(currentReport.period.to).toLocaleDateString()}`],
+        [''],
+        ['SUMMARY'],
+        ['Total Transactions', currentReport.summary.totalTransactions],
+        ['Total Revenue', currentReport.summary.totalRevenue],
+        ['POS Transactions', currentReport.summary.posTransactions],
+        ['Online Orders', currentReport.summary.onlineOrders],
+        ['Average Transaction', currentReport.summary.averageTransaction],
+        [''],
+        ['PAYMENT BREAKDOWN'],
+        ['Method', 'Count', 'Revenue'],
+        ['Cash', currentReport.paymentBreakdown.cash.count, currentReport.paymentBreakdown.cash.revenue],
+        ['Card', currentReport.paymentBreakdown.card.count, currentReport.paymentBreakdown.card.revenue],
+        ['Online', currentReport.paymentBreakdown.online.count, currentReport.paymentBreakdown.online.revenue],
+        [''],
+        ['TOP PRODUCTS'],
+        ['Product', 'Quantity', 'Revenue'],
+        ...currentReport.topProducts.map(p => [p.name, p.quantity, p.revenue.toFixed(2)])
+      ];
+
+      const csv = rows.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
