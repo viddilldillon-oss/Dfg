@@ -18,7 +18,7 @@ router.post('/start', async (req, res) => {
       return res.status(500).json({ ok: false, error: 'Clover configuration error.' });
     }
 
-    const url = `https://sandbox.dev.clover.com/v3/merchants/${MERCHANT_ID}/checkouts`;
+    const url = `https://sandbox.dev.clover.com/api/checkout/v3/checkouts`;
 
     // 2. Create the checkout payload
     const payload = {
