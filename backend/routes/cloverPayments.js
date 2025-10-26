@@ -30,14 +30,24 @@ router.post('/start', async (req, res) => {
       })
     });
 
-    const checkout = await response.json();
+    const rawResponse = await response.text();
+    let data;
+    try {
+      data = JSON.parse(rawResponse);
+    } catch (e) {
+      data = { rawResponse: rawResponse };
+    }
 
-    if (response.ok && checkout.href) {
-      console.log('✅ Clover Hosted Checkout session created:', checkout.href);
-      res.json({ ok: true, href: checkout.href });
+    console.log('Clover response status:', response.status);
+    console.log('Clover raw response (first 100 chars):', rawResponse.substring(0, 100));
+    console.log('Clover parsed JSON:', data);
+
+    if (response.ok && data.href) {
+      console.log('✅ Clover Hosted Checkout session created:', data.href);
+      res.json({ ok: true, href: data.href });
     } else {
-      console.error('❌ Clover Hosted Checkout creation failed:', checkout);
-      res.status(response.status).json({ ok: false, error: 'Failed to create Clover Hosted Checkout session' });
+      console.error('❌ Clover Hosted Checkout creation failed:', data);
+      res.status(response.status).json({ ok: false, error: 'Failed to create Clover Hosted Checkout session', details: data });
     }
   } catch (err) {
     console.error('❌ Clover error:', err);
