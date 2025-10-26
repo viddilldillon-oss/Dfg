@@ -217,9 +217,20 @@
           
           const name = document.getElementById("name").value.trim();
           const email = document.getElementById("email").value.trim();
-          const phone = document.getElementById("phone").value.trim();
-          const address = document.getElementById("address").value.trim();
+          const addressStr = document.getElementById("address").value.trim();
           
+          // A simple parser for the address string.
+          // Assumes format: "line1, city, state, zip, country"
+          // This is brittle and should be improved with separate form fields.
+          const addressParts = addressStr.split(',').map(part => part.trim());
+          const address = {
+            line1: addressParts[0] || '',
+            city: addressParts[1] || '',
+            state: addressParts[2] || '',
+            zip: addressParts[3] || '',
+            country: addressParts[4] || 'CA', // Default to Canada
+          };
+
           const items = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
           
           if (!items.length) {
@@ -229,26 +240,29 @@
           
           try {
             console.log("📤 Sending to /api/clover/start...");
-            const response = await fetch("http://localhost:5000/api/clover/start", {
+            const response = await fetch("/api/clover/start", { // Use relative URL
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                amount: calculatedTotal, // Backend handles conversion to cents
-                currency: "usd",
-                email: email
+                name: name,
+                email: email,
+                shippingAddress: address,
+                total: calculatedTotal
               })
             });
             
             const data = await response.json();
-            console.log("📦 Response:", data);
+            console.log("📦 Response from /api/clover/start:", data);
             
-            if (data.href) {
+            if (data.ok && data.href) {
+              console.log("Redirecting to Clover checkout:", data.href);
               window.location.href = data.href; // Redirect to Clover checkout
             } else {
-              alert("Could not create Clover checkout session.");
+              console.error("Clover checkout creation failed:", data.details || "Unknown error");
+              alert("Could not create Clover checkout session. " + (data.details || ""));
             }
           } catch (err) {
-            console.error("❌ Error:", err);
+            console.error("❌ Error during Clover checkout:", err);
             alert("Error: " + err.message);
           }
           

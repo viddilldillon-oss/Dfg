@@ -5,49 +5,61 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
 router.post('/start', async (req, res) => {
   try {
-    const { amount, currency, email } = req.body;
-    const key = process.env.CLOVER_SECRET_KEY;
+    const { name, email, shippingAddress, total } = req.body;
 
-    // Clover API expects amount in cents
-    const priceInCents = Math.round(amount * 100);
+    // 1. Select Clover credentials based on CLOVER_MODE
+    const isLive = process.env.CLOVER_MODE === 'live';
+    const SECRET_KEY = isLive ? process.env.CLOVER_LIVE_SECRET_KEY : process.env.CLOVER_SANDBOX_SECRET_KEY;
+    const MERCHANT_ID = isLive ? process.env.CLOVER_LIVE_MERCHANT_ID : process.env.CLOVER_SANDBOX_MERCHANT_ID;
+    const API_BASE_URL = isLive ? process.env.CLOVER_LIVE_API_BASE_URL : process.env.CLOVER_SANDBOX_API_BASE_URL;
 
-    const payload = {
-      customer: {
-        email: email
-      },
-      shoppingCart: {
-        lineItems: [
-          {
-            name: 'Supa-Mart Purchase',
-            price: priceInCents,
-            unitQty: 1
-          }
-        ]
-      }
-    };
-
-    const cloverRes = await fetch('https://sandbox.dev.clover.com/invoicingcheckoutservice/v1/checkouts', {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${key}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    // Gracefully handle non-OK responses before attempting to parse JSON
-    if (!cloverRes.ok) {
-      const errorText = await cloverRes.text();
-      console.error('❌ Clover API error:', { status: cloverRes.status, text: errorText });
-      return res.status(cloverRes.status).json({ 
-        ok: false, 
-        error: 'Could not create Clover checkout session.', 
-        details: errorText 
-      });
+    if (!SECRET_KEY || !MERCHANT_ID || !API_BASE_URL) {
+      console.error('❌ Clover environment variables not set');
+      return res.status(500).json({ ok: false, error: 'Clover configuration error.' });
     }
 
-    const data = await cloverRes.json();
-    res.json(data);
+    const url = `${API_BASE_URL}/merchants/${MERCHANT_ID}/checkouts`;
+
+    // 2. Create the checkout payload
+    const payload = {
+      amount: Math.round(total * 100), // Amount in cents
+      currency: 'CAD', // Or get from request if dynamic
+      customer: {
+        name,
+        email,
+        shipping: {
+          address: {
+            line1: shippingAddress.line1,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            zip: shippingAddress.zip,
+            country: shippingAddress.country,
+          },
+        },
+      },
+    };
+
+    // 3. Make the API call to Clover
+    const cloverRes = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const cloverData = await cloverRes.json();
+
+    // 4. Log the response and send the checkout URL to the frontend
+    console.log('✅ Clover checkout response:', cloverData);
+
+    if (cloverData.href) {
+      res.json({ ok: true, href: cloverData.href });
+    } else {
+      console.error('❌ Clover API error:', cloverData);
+      res.status(500).json({ ok: false, error: 'Could not create Clover checkout.', details: cloverData });
+    }
 
   } catch (err) {
     console.error('❌ Clover error:', err);
