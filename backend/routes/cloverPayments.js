@@ -8,39 +8,41 @@ router.post('/start', async (req, res) => {
     const { total: amount } = req.body;
     const secretKey = process.env.CLOVER_PRIVATE_KEY;
 
-    const resp = await fetch("https://sandbox.dev.clover.com/v1/charges", {
+    const response = await fetch("https://sandbox.dev.clover.com/v1/charges", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${secretKey}`
       },
       body: JSON.stringify({
-        "amount": Math.round(amount * 100),
-        "currency": "usd",
-        "source": "tok_sandbox",
-        "description": "Supa Dillie-Cious Order"
+        amount: Math.round(amount * 100),
+        currency: "usd",
+        source: "tok_sandbox", // temporary token for test
+        description: "Supa Dillie-Cious Mart Test Order"
       })
     });
 
-    const raw = await resp.text();
+    const responseText = await response.text();
+    console.log("Clover response status:", response.status);
+    console.log("Clover response text:", responseText);
+
     let data;
-    try { data = JSON.parse(raw); } catch { data = { nonJson: raw }; }
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      data = { error: 'Invalid JSON response from Clover' };
+    }
 
-    console.log("🔐 Using Clover key prefix:", (secretKey || "").slice(0,6));
-    console.log("📡 Clover status:", resp.status);
-    console.log("📦 Clover payload:", data);
-
-    if (resp.ok && data.id) {
+    if (response.ok && data.id) {
       console.log("✅ Clover charge created successfully");
       return res.json({ success: true, chargeId: data.id });
     } else {
-      console.error("❌ Clover charge creation failed:", raw);
-      return res.status(resp.status).json({ error: "Clover charge creation failed", details: raw });
+      console.error("❌ Clover charge creation failed:", responseText);
+      return res.status(response.status).json({ error: "Clover charge creation failed", details: responseText });
     }
   } catch (err) {
     console.error('❌ Clover error:', err);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
-
 module.exports = router;
