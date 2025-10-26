@@ -5,64 +5,43 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
 router.post('/start', async (req, res) => {
   try {
-    const { name, email, shippingAddress, total } = req.body;
+    const { total } = req.body;
+    const secretKey = process.env.CLOVER_PRIVATE_KEY;
 
-    // 1. Select Clover credentials based on CLOVER_MODE
-    const isLive = process.env.CLOVER_MODE === 'live';
-    const SECRET_KEY = isLive ? process.env.CLOVER_LIVE_SECRET_KEY : process.env.CLOVER_SANDBOX_SECRET_KEY;
-    const MERCHANT_ID = isLive ? process.env.CLOVER_LIVE_MERCHANT_ID : process.env.CLOVER_SANDBOX_MERCHANT_ID;
-    const API_BASE_URL = isLive ? process.env.CLOVER_LIVE_API_BASE_URL : process.env.CLOVER_SANDBOX_API_BASE_URL;
-
-    if (!SECRET_KEY || !MERCHANT_ID || !API_BASE_URL) {
-      console.error('❌ Clover environment variables not set');
-      return res.status(500).json({ ok: false, error: 'Clover configuration error.' });
-    }
-
-    const url = `https://sandbox.dev.clover.com/api/checkout/v3/checkouts`;
-
-    // 2. Create the checkout payload
-    const payload = {
-      "order": {
-        "total": Math.round(total * 100),
-        "currency": "usd"
-      },
-      "redirect": {
-        "success": "https://your-frontend-url.com/SF-success.html",
-        "cancel": "https://your-frontend-url.com/SF-checkout.html"
-      }
-    };
-
-    // 3. Make the API call to Clover
-    console.log("🔐 Using Clover key prefix:", SECRET_KEY?.slice(0,8));
-    const cloverRes = await fetch(url, {
-      method: 'POST',
+    const resp = await fetch("https://sandbox.dev.clover.com/api/checkout/v3/checkouts", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${SECRET_KEY}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${secretKey}`
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        order: {
+          total: Math.round(Number(total) * 100), // cents
+          currency: "USD"
+        },
+        redirect: {
+          success: "https://<YOUR-FRONTEND-DOMAIN>/SF-success.html",
+          cancel:  "https://<YOUR-FRONTEND-DOMAIN>/SF-checkout.html"
+        }
+      })
     });
 
-    let rawText = await cloverRes.text();
-    let cloverData;
+    // Read once, parse if JSON, otherwise return the raw text
+    const raw = await resp.text();
+    let data;
+    try { data = JSON.parse(raw); } catch { data = { nonJson: raw }; }
 
-    try {
-      cloverData = JSON.parse(rawText);
-    } catch (err) {
-      console.error("❌ Clover non-JSON response:", rawText);
-      return res.status(500).json({ error: "Invalid response from Clover", details: rawText });
-    }
+    // Log safely
+    console.log("🔐 Using Clover key prefix:", (secretKey || "").slice(0,6));
+    console.log("📡 Clover status:", resp.status);
+    console.log("📦 Clover payload keys:", data && Object.keys(data));
 
-    // 4. Log the response and send the checkout URL to the frontend
-    console.log('✅ Clover checkout response:', cloverData);
-
-    if (cloverData.href) {
-      res.json({ ok: true, href: cloverData.href });
+    // Reply to client
+    if (data && data._links && data._links.checkout && data._links.checkout.href) {
+      return res.json({ href: data._links.checkout.href });
     } else {
-      console.error('❌ Clover API error:', cloverData);
-      res.status(500).json({ ok: false, error: 'Could not create Clover checkout.', details: cloverData });
+      return res.status(500).json({ error: "Clover checkout not created", details: raw });
     }
-
   } catch (err) {
     console.error('❌ Clover error:', err);
     res.status(500).json({ ok: false, error: err.message });
