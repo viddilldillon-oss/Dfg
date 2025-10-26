@@ -10,7 +10,7 @@ router.post('/start', async (req, res) => {
 
     const MERCHANT_ID = 'SJCPEXE0EJ111';
     const PRIVATE_TOKEN = '803fd96f-83cf-21da-5780-9411137269ee';
-    const CLOVER_API_URL = `https://sandbox.dev.clover.com/v3/merchants/${MERCHANT_ID}/checkouts`;
+    const CLOVER_API_URL = `https://sandbox.dev.clover.com/invoicingcheckoutservice/v1/checkouts`;
 
     const response = await fetch(CLOVER_API_URL, {
       method: 'POST',
@@ -19,32 +19,31 @@ router.post('/start', async (req, res) => {
         'Authorization': `Bearer ${PRIVATE_TOKEN}`
       },
       body: JSON.stringify({
-        "order": {
-          "state": "open",
-          "manualTransaction": true,
-          "items": [
-            { "name": "Cart Total", "price": amountInCents }
-          ]
-        },
-        "redirectUrl": "https://yourdomain.com/checkout-success"
+        "total": amountInCents,
+        "currency": "usd",
+        "redirect": {
+          "success": "https://yourdomain.com/checkout-success",
+          "cancel": "https://yourdomain.com/checkout-cancel"
+        }
       })
     });
 
     const rawResponse = await response.text();
+    console.log('Clover response status:', response.status);
+    console.log('Clover raw response (first 200 chars):', rawResponse.substring(0, 200));
+
     let data;
     try {
       data = JSON.parse(rawResponse);
     } catch (e) {
-      data = { rawResponse: rawResponse };
+      console.error('❌ Failed to parse Clover response as JSON:', rawResponse);
+      return res.status(500).json({ ok: false, error: 'Failed to parse Clover response' });
     }
 
-    console.log('Clover response status:', response.status);
-    console.log('Clover raw response (first 100 chars):', rawResponse.substring(0, 100));
-    console.log('Clover parsed JSON:', data);
-
-    if (response.ok && data.href) {
-      console.log('✅ Clover Hosted Checkout session created:', data.href);
-      res.json({ ok: true, href: data.href });
+    if (response.ok && data.checkoutPageUrl) {
+      console.log('✅ Clover checkout created successfully');
+      console.log('📦 checkoutPageUrl:', data.checkoutPageUrl);
+      res.json({ ok: true, href: data.checkoutPageUrl });
     } else {
       console.error('❌ Clover Hosted Checkout creation failed:', data);
       res.status(response.status).json({ ok: false, error: 'Failed to create Clover Hosted Checkout session', details: data });
