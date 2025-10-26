@@ -33,6 +33,7 @@ router.post('/start', async (req, res) => {
     };
 
     // 3. Make the API call to Clover
+    console.log("🔐 Using Clover key prefix:", SECRET_KEY?.slice(0,8));
     const cloverRes = await fetch(url, {
       method: 'POST',
       headers: {
