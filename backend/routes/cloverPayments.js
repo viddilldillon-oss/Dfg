@@ -18,25 +18,18 @@ router.post('/start', async (req, res) => {
       return res.status(500).json({ ok: false, error: 'Clover configuration error.' });
     }
 
-    const url = `${API_BASE_URL}/merchants/${MERCHANT_ID}/checkouts`;
+    const url = `https://sandbox.dev.clover.com/v3/merchants/${MERCHANT_ID}/checkouts`;
 
     // 2. Create the checkout payload
     const payload = {
-      amount: Math.round(total * 100), // Amount in cents
-      currency: 'CAD', // Or get from request if dynamic
-      customer: {
-        name,
-        email,
-        shipping: {
-          address: {
-            line1: shippingAddress.line1,
-            city: shippingAddress.city,
-            state: shippingAddress.state,
-            zip: shippingAddress.zip,
-            country: shippingAddress.country,
-          },
-        },
+      "order": {
+        "total": Math.round(total * 100),
+        "currency": "usd"
       },
+      "redirect": {
+        "success": "https://your-frontend-url.com/SF-success.html",
+        "cancel": "https://your-frontend-url.com/SF-checkout.html"
+      }
     };
 
     // 3. Make the API call to Clover
