@@ -49,13 +49,14 @@ router.post('/start', async (req, res) => {
       body: JSON.stringify(payload),
     });
 
+    let rawText = await cloverRes.text();
     let cloverData;
+
     try {
-      cloverData = await cloverRes.json();
+      cloverData = JSON.parse(rawText);
     } catch (err) {
-      const text = await cloverRes.text();
-      console.error("❌ Clover non-JSON response:", text);
-      return res.status(500).json({ error: "Invalid response from Clover", details: text });
+      console.error("❌ Clover non-JSON response:", rawText);
+      return res.status(500).json({ error: "Invalid response from Clover", details: rawText });
     }
 
     // 4. Log the response and send the checkout URL to the frontend
