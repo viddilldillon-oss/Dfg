@@ -6,39 +6,38 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 router.post('/start', async (req, res) => {
   try {
     const { total: amount } = req.body;
-    const secretKey = process.env.CLOVER_PRIVATE_KEY;
+    const amountInCents = Math.round(amount * 100);
 
-    const response = await fetch("https://sandbox.dev.clover.com/v1/charges", {
-      method: "POST",
+    const MERCHANT_ID = 'SJCPEXE0EJ111';
+    const PRIVATE_TOKEN = '803fd96f-83cf-21da-5780-9411137269ee';
+    const CLOVER_API_URL = `https://sandbox.dev.clover.com/v3/merchants/${MERCHANT_ID}/checkouts`;
+
+    const response = await fetch(CLOVER_API_URL, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${secretKey}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${PRIVATE_TOKEN}`
       },
       body: JSON.stringify({
-        amount: Math.round(amount * 100),
-        currency: "usd",
-        source: "tok_sandbox", // temporary token for test
-        description: "Supa Dillie-Cious Mart Test Order"
+        "order": {
+          "state": "open",
+          "manualTransaction": true,
+          "items": [
+            { "name": "Cart Total", "price": amountInCents }
+          ]
+        },
+        "redirectUrl": "https://yourdomain.com/checkout-success"
       })
     });
 
-    const responseText = await response.text();
-    console.log("Clover response status:", response.status);
-    console.log("Clover response text:", responseText);
+    const checkout = await response.json();
 
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      data = { error: 'Invalid JSON response from Clover' };
-    }
-
-    if (response.ok && data.id) {
-      console.log("✅ Clover charge created successfully");
-      return res.json({ success: true, chargeId: data.id });
+    if (response.ok && checkout.href) {
+      console.log('✅ Clover Hosted Checkout session created:', checkout.href);
+      res.json({ ok: true, href: checkout.href });
     } else {
-      console.error("❌ Clover charge creation failed:", responseText);
-      return res.status(response.status).json({ error: "Clover charge creation failed", details: responseText });
+      console.error('❌ Clover Hosted Checkout creation failed:', checkout);
+      res.status(response.status).json({ ok: false, error: 'Failed to create Clover Hosted Checkout session' });
     }
   } catch (err) {
     console.error('❌ Clover error:', err);

@@ -244,9 +244,6 @@
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                name: name,
-                email: email,
-                shippingAddress: address,
                 total: calculatedTotal
               })
             });
@@ -258,8 +255,8 @@
               console.log("Redirecting to Clover checkout:", data.href);
               window.location.href = data.href; // Redirect to Clover checkout
             } else {
-              console.error("Clover checkout creation failed:", data.details || "Unknown error");
-              alert("Could not create Clover checkout session. " + (data.details || ""));
+              console.error("Clover checkout creation failed:", data.error || "Unknown error");
+              alert("Could not create Clover checkout session. " + (data.error || ""));
             }
           } catch (err) {
             console.error("❌ Error during Clover checkout:", err);
