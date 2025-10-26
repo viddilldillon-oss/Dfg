@@ -53,6 +53,7 @@ const posSalesRoutes = require('./routes/p-b-sales'); // ✅ POS Sales routes
 const reportsRoutes = require('./routes/reports'); // 🎯 STAGE 10 — Reports routes
 const adminSettingsRoutes = require('./routes/admin-settings'); // 🎯 STAGE 11 — Admin Settings routes
 const cloverRoutes = require('./routes/cloverPayments'); // ✅ Clover payment routes
+const cloverWebhook = require("./routes/cloverWebhook");
 
 // ✅ API Routes
 app.use("/api/orders", orderRoutes);
@@ -69,6 +70,7 @@ app.use("/api/users", userRoutes); // ✅ User routes (password change)
 app.use("/api/settings", settingsRoutes); // ✅ Settings routes
 app.use("/api/export", exportRoutes); // ✅ Export routes
 app.use("/api/clover", cloverRoutes);
+app.use("/api/clover", cloverWebhook);
 
 app.use('/api/pos-sales', posSalesRoutes); // ✅ POS Sales routes
 app.use('/api/reports', reportsRoutes); // 🎯 STAGE 10 — Reports routes

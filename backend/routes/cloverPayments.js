@@ -22,8 +22,9 @@ router.post('/start', async (req, res) => {
         "total": amountInCents,
         "currency": "usd",
         "redirect": {
-          "success": "https://yourdomain.com/checkout-success",
-          "cancel": "https://yourdomain.com/checkout-cancel"
+          "success": "https://dfg-qq0j.onrender.com/checkout-success.html",
+          "cancel": "https://dfg-qq0j.onrender.com/checkout-cancel.html",
+          "failure": "https://dfg-qq0j.onrender.com/checkout-failed.html"
         }
       })
     });
@@ -42,7 +43,7 @@ router.post('/start', async (req, res) => {
 
     if (response.ok && data.checkoutPageUrl) {
       console.log('✅ Clover checkout created successfully');
-      console.log('📦 checkoutPageUrl:', data.checkoutPageUrl);
+      console.log("✅ Clover Hosted Checkout Created:", data.checkoutPageUrl);
       res.json({ ok: true, href: data.checkoutPageUrl });
     } else {
       console.error('❌ Clover Hosted Checkout creation failed:', data);
